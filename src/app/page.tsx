@@ -11,7 +11,6 @@ import { SectionProblem } from '@/components/sections/SectionProblem'
 import { SectionApproach } from '@/components/sections/SectionApproach'
 import { SectionBlueprint } from '@/components/sections/SectionBlueprint'
 import { SectionSandbox } from '@/components/sections/SectionSandbox'
-import { SectionCapabilities } from '@/components/sections/SectionCapabilities'
 import { SectionWork } from '@/components/sections/SectionWork'
 import { SectionContact } from '@/components/sections/SectionContact'
 
@@ -33,7 +32,7 @@ export default function Home() {
       setScrollProgress(v)
       
       // Map scroll to sections
-      const sections = ['hero', 'problem', 'approach', 'blueprint', 'sandbox', 'capabilities', 'work', 'contact'] as const
+      const sections = ['hero', 'problem', 'approach', 'blueprint', 'sandbox', 'work', 'contact'] as const
       const sectionIndex = Math.min(Math.floor(v * sections.length), sections.length - 1)
       setCurrentSection(sections[sectionIndex])
     })
@@ -86,12 +85,26 @@ export default function Home() {
           >
             CALANCE
           </button>
-          <button
-            onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-            className="text-white/50 text-xs tracking-widest hover:text-white transition-colors"
-          >
-            START DIALOGUE
-          </button>
+          <div className="flex items-center gap-6">
+            <button
+              onClick={() => document.getElementById('blueprint')?.scrollIntoView({ behavior: 'smooth' })}
+              className="hidden md:block text-white/40 text-xs tracking-widest hover:text-white transition-colors"
+            >
+              BLUEPRINT
+            </button>
+            <button
+              onClick={() => document.getElementById('sandbox')?.scrollIntoView({ behavior: 'smooth' })}
+              className="hidden md:block text-white/40 text-xs tracking-widest hover:text-white transition-colors"
+            >
+              SANDBOX
+            </button>
+            <button
+              onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+              className="text-white/50 text-xs tracking-widest hover:text-white transition-colors"
+            >
+              CONTACT
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -102,7 +115,6 @@ export default function Home() {
         <SectionApproach />
         <SectionBlueprint />
         <SectionSandbox />
-        <SectionCapabilities />
         <SectionWork />
         <SectionContact />
       </main>

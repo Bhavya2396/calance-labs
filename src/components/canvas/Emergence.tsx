@@ -58,23 +58,13 @@ export function Emergence() {
     return { positions: pos, velocities: vel }
   }, [])
   
-  // Section-based positioning and parameters
-  // Text positions alternate - 3D goes opposite side
+  // Section-based positioning
+  // Blueprint & Sandbox are full-width sections, so 3D moves to edges
   const getSectionParams = useCallback((section: string) => {
-    // Sections and their text positions:
-    // hero: left → 3D right
-    // problem: right → 3D left  
-    // approach: left → 3D right
-    // blueprint: left → 3D right
-    // sandbox: right → 3D left
-    // capabilities: right → 3D left
-    // work: left → 3D right
-    // contact: center → 3D top/center
-    
     switch (section) {
       case 'hero':
         return { 
-          x: viewport.width * 0.22, 
+          x: viewport.width * 0.25, 
           y: 0,
           scale: 1.2,
           spread: 1,
@@ -83,7 +73,7 @@ export function Emergence() {
         }
       case 'problem':
         return { 
-          x: -viewport.width * 0.22,
+          x: -viewport.width * 0.25,
           y: 0,
           scale: 1,
           spread: 1.3,
@@ -92,7 +82,7 @@ export function Emergence() {
         }
       case 'approach':
         return { 
-          x: viewport.width * 0.22,
+          x: viewport.width * 0.25,
           y: 0,
           scale: 0.9,
           spread: 0.8,
@@ -101,44 +91,35 @@ export function Emergence() {
         }
       case 'blueprint':
         return { 
-          x: viewport.width * 0.25,
-          y: 0,
-          scale: 1.3,
-          spread: 0.7,
-          speed: 1.5,
+          x: viewport.width * 0.35, // Far right for 2-column layout
+          y: -viewport.height * 0.1,
+          scale: 0.8,
+          spread: 0.6,
+          speed: 1.2,
           color: '#d4a574',
         }
       case 'sandbox':
         return { 
-          x: -viewport.width * 0.22,
+          x: -viewport.width * 0.35, // Far left for 2-column layout
           y: 0,
-          scale: 1.1,
-          spread: 1,
-          speed: 1.2,
+          scale: 0.9,
+          spread: 0.9,
+          speed: 1,
           color: '#c9956c',
-        }
-      case 'capabilities':
-        return { 
-          x: -viewport.width * 0.22,
-          y: 0,
-          scale: 1,
-          spread: 1.1,
-          speed: 0.9,
-          color: '#9ca3af',
         }
       case 'work':
         return { 
-          x: viewport.width * 0.22,
+          x: viewport.width * 0.35,
           y: 0,
-          scale: 1,
-          spread: 1.2,
+          scale: 0.8,
+          spread: 1,
           speed: 0.7,
           color: '#b8a090',
         }
       case 'contact':
         return { 
           x: 0,
-          y: viewport.height * 0.15,
+          y: viewport.height * 0.2,
           scale: 1.4,
           spread: 0.5,
           speed: 0.4,

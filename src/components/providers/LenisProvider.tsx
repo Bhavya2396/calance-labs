@@ -7,7 +7,7 @@ interface LenisProviderProps {
   children: React.ReactNode
 }
 
-const SECTIONS: SectionName[] = ['hero', 'problem', 'approach', 'blueprint', 'sandbox', 'capabilities', 'work', 'contact']
+const SECTIONS: SectionName[] = ['hero', 'problem', 'approach', 'blueprint', 'sandbox', 'work', 'contact']
 
 export function LenisProvider({ children }: LenisProviderProps) {
   const setScrollProgress = useStore((state) => state.setScrollProgress)

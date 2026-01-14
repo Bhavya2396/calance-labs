@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 
 // Types
-export type SectionName = 'hero' | 'problem' | 'approach' | 'blueprint' | 'sandbox' | 'capabilities' | 'work' | 'contact'
+export type SectionName = 'hero' | 'problem' | 'approach' | 'blueprint' | 'sandbox' | 'work' | 'contact'
 
 export interface Solution {
   name: string
