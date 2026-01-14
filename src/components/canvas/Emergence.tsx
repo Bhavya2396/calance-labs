@@ -6,11 +6,12 @@ import * as THREE from 'three'
 import { useStore } from '@/store/useStore'
 
 // ========================================
-// INTERACTIVE PARTICLE SPHERE
-// A cohesive, responsive 3D element
+// FLOWING 3D PRESENCE
+// Moves and transforms with scroll
+// Never collides with text
 // ========================================
 
-const PARTICLE_COUNT = 3000
+const PARTICLE_COUNT = 2000
 
 export function Emergence() {
   const groupRef = useRef<THREE.Group>(null)
@@ -26,7 +27,6 @@ export function Emergence() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const { viewport } = useThree()
   
-  // Track mouse for interactivity
   const handlePointerMove = useCallback((e: THREE.Event) => {
     const event = e as unknown as { clientX: number; clientY: number }
     setMousePos({
@@ -35,73 +35,164 @@ export function Emergence() {
     })
   }, [])
   
-  // Generate particles in a sphere
+  // Generate particles
   const { positions, velocities } = useMemo(() => {
     const pos = new Float32Array(PARTICLE_COUNT * 3)
     const vel = new Float32Array(PARTICLE_COUNT * 3)
     
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       const i3 = i * 3
-      // Fibonacci sphere distribution
       const phi = Math.acos(1 - 2 * (i + 0.5) / PARTICLE_COUNT)
       const theta = Math.PI * (1 + Math.sqrt(5)) * i
-      const r = 2 + Math.random() * 0.5
+      const r = 1.5 + Math.random() * 0.5
       
       pos[i3] = r * Math.sin(phi) * Math.cos(theta)
       pos[i3 + 1] = r * Math.sin(phi) * Math.sin(theta)
       pos[i3 + 2] = r * Math.cos(phi)
       
-      // Random velocities for organic movement
-      vel[i3] = (Math.random() - 0.5) * 0.02
-      vel[i3 + 1] = (Math.random() - 0.5) * 0.02
-      vel[i3 + 2] = (Math.random() - 0.5) * 0.02
+      vel[i3] = (Math.random() - 0.5) * 0.015
+      vel[i3 + 1] = (Math.random() - 0.5) * 0.015
+      vel[i3 + 2] = (Math.random() - 0.5) * 0.015
     }
     
     return { positions: pos, velocities: vel }
   }, [])
   
-  // Section-based parameters
+  // Section-based positioning and parameters
+  // Text positions alternate - 3D goes opposite side
   const getSectionParams = useCallback((section: string) => {
+    // Sections and their text positions:
+    // hero: left → 3D right
+    // problem: right → 3D left  
+    // approach: left → 3D right
+    // blueprint: left → 3D right
+    // sandbox: right → 3D left
+    // capabilities: right → 3D left
+    // work: left → 3D right
+    // contact: center → 3D top/center
+    
     switch (section) {
       case 'hero':
-        return { spread: 1, speed: 1, color: '#c9956c', coreScale: 0.3, ringScale: 0.4 }
-      case 'about':
-        return { spread: 1.2, speed: 0.8, color: '#9ca3af', coreScale: 0.4, ringScale: 0.5 }
-      case 'discovery':
-        return { spread: 0.8, speed: 1.5, color: '#d4a574', coreScale: 0.6, ringScale: 0.8 }
+        return { 
+          x: viewport.width * 0.22, 
+          y: 0,
+          scale: 1.2,
+          spread: 1,
+          speed: 0.8,
+          color: '#c9956c',
+        }
+      case 'problem':
+        return { 
+          x: -viewport.width * 0.22,
+          y: 0,
+          scale: 1,
+          spread: 1.3,
+          speed: 0.5,
+          color: '#7a7a7a',
+        }
+      case 'approach':
+        return { 
+          x: viewport.width * 0.22,
+          y: 0,
+          scale: 0.9,
+          spread: 0.8,
+          speed: 0.6,
+          color: '#a89078',
+        }
+      case 'blueprint':
+        return { 
+          x: viewport.width * 0.25,
+          y: 0,
+          scale: 1.3,
+          spread: 0.7,
+          speed: 1.5,
+          color: '#d4a574',
+        }
       case 'sandbox':
-        return { spread: 1.1, speed: 2, color: '#c9956c', coreScale: 0.5, ringScale: 0.7 }
+        return { 
+          x: -viewport.width * 0.22,
+          y: 0,
+          scale: 1.1,
+          spread: 1,
+          speed: 1.2,
+          color: '#c9956c',
+        }
+      case 'capabilities':
+        return { 
+          x: -viewport.width * 0.22,
+          y: 0,
+          scale: 1,
+          spread: 1.1,
+          speed: 0.9,
+          color: '#9ca3af',
+        }
       case 'work':
-        return { spread: 1.3, speed: 1, color: '#a3a3a3', coreScale: 0.35, ringScale: 0.5 }
+        return { 
+          x: viewport.width * 0.22,
+          y: 0,
+          scale: 1,
+          spread: 1.2,
+          speed: 0.7,
+          color: '#b8a090',
+        }
       case 'contact':
-        return { spread: 0.6, speed: 0.5, color: '#d4a574', coreScale: 0.8, ringScale: 1 }
+        return { 
+          x: 0,
+          y: viewport.height * 0.15,
+          scale: 1.4,
+          spread: 0.5,
+          speed: 0.4,
+          color: '#d4a574',
+        }
       default:
-        return { spread: 1, speed: 1, color: '#c9956c', coreScale: 0.3, ringScale: 0.4 }
+        return { 
+          x: viewport.width * 0.2,
+          y: 0,
+          scale: 1,
+          spread: 1,
+          speed: 0.8,
+          color: '#c9956c',
+        }
     }
-  }, [])
+  }, [viewport])
   
-  // Refs for smooth transitions
+  // Smooth transition refs
+  const currentX = useRef(0)
+  const currentY = useRef(0)
+  const currentScale = useRef(1)
   const currentSpread = useRef(1)
   const currentSpeed = useRef(1)
   const currentColor = useRef(new THREE.Color('#c9956c'))
-  const currentCoreScale = useRef(0.3)
   const pulseIntensity = useRef(0)
   
   useFrame((state) => {
     const time = state.clock.elapsedTime
     const params = getSectionParams(currentSection)
     
-    // Smooth transitions
+    // Smooth position transitions
+    currentX.current = THREE.MathUtils.lerp(currentX.current, params.x, 0.03)
+    currentY.current = THREE.MathUtils.lerp(currentY.current, params.y, 0.03)
+    currentScale.current = THREE.MathUtils.lerp(currentScale.current, params.scale, 0.03)
     currentSpread.current = THREE.MathUtils.lerp(currentSpread.current, params.spread, 0.02)
     currentSpeed.current = THREE.MathUtils.lerp(currentSpeed.current, params.speed, 0.02)
     currentColor.current.lerp(new THREE.Color(params.color), 0.02)
-    currentCoreScale.current = THREE.MathUtils.lerp(currentCoreScale.current, params.coreScale, 0.03)
     
     // Pulse effect
     if (pulseEffect || isGenerating) {
       pulseIntensity.current = THREE.MathUtils.lerp(pulseIntensity.current, 1, 0.1)
     } else {
       pulseIntensity.current = THREE.MathUtils.lerp(pulseIntensity.current, 0, 0.05)
+    }
+    
+    // Update group position
+    if (groupRef.current) {
+      groupRef.current.position.x = currentX.current
+      groupRef.current.position.y = currentY.current
+      groupRef.current.scale.setScalar(currentScale.current)
+      
+      // Gentle rotation
+      groupRef.current.rotation.y = time * 0.1 + scrollProgress * Math.PI
+      groupRef.current.rotation.x = Math.sin(scrollProgress * Math.PI * 2) * 0.1
     }
     
     // Update particles
@@ -111,53 +202,48 @@ export function Emergence() {
       for (let i = 0; i < PARTICLE_COUNT; i++) {
         const i3 = i * 3
         
-        // Get original sphere position
         const phi = Math.acos(1 - 2 * (i + 0.5) / PARTICLE_COUNT)
         const theta = Math.PI * (1 + Math.sqrt(5)) * i
-        const baseR = 2 * currentSpread.current
+        const baseR = 1.5 * currentSpread.current
         
-        // Add time-based movement
-        const timeOffset = time * currentSpeed.current * 0.3
-        const breathe = Math.sin(time * 0.5 + i * 0.001) * 0.1
-        const pulse = Math.sin(time * 3 + i * 0.01) * pulseIntensity.current * 0.3
+        const timeOffset = time * currentSpeed.current * 0.2
+        const breathe = Math.sin(time * 0.4 + i * 0.001) * 0.08
+        const pulse = Math.sin(time * 4 + i * 0.01) * pulseIntensity.current * 0.2
         
-        // Mouse influence
-        const mouseInfluence = 0.3
+        // Mouse influence (subtle)
+        const mouseInfluence = 0.15
         const dx = mousePos.x * mouseInfluence
         const dy = mousePos.y * mouseInfluence
         
-        // Calculate position
         const r = baseR + breathe + pulse
-        const thetaAnimated = theta + timeOffset * 0.1
+        const thetaAnimated = theta + timeOffset * 0.08
         
         posArray[i3] = r * Math.sin(phi) * Math.cos(thetaAnimated) + dx * (1 - phi / Math.PI)
         posArray[i3 + 1] = r * Math.sin(phi) * Math.sin(thetaAnimated) + dy * Math.sin(phi)
         posArray[i3 + 2] = r * Math.cos(phi)
         
-        // Add velocity for organic feel
-        posArray[i3] += velocities[i3] * Math.sin(time * 2 + i)
-        posArray[i3 + 1] += velocities[i3 + 1] * Math.cos(time * 1.5 + i)
-        posArray[i3 + 2] += velocities[i3 + 2] * Math.sin(time * 1.8 + i)
+        posArray[i3] += velocities[i3] * Math.sin(time * 1.5 + i)
+        posArray[i3 + 1] += velocities[i3 + 1] * Math.cos(time + i)
+        posArray[i3 + 2] += velocities[i3 + 2] * Math.sin(time * 1.2 + i)
       }
       
       pointsRef.current.geometry.attributes.position.needsUpdate = true
       
-      // Update material
       const material = pointsRef.current.material as THREE.PointsMaterial
       material.color.copy(currentColor.current)
-      material.size = 0.015 + pulseIntensity.current * 0.01
-      material.opacity = 0.6 + pulseIntensity.current * 0.2
+      material.size = 0.012 + pulseIntensity.current * 0.008
+      material.opacity = 0.5 + pulseIntensity.current * 0.2
     }
     
     // Update core
     if (coreRef.current) {
-      const scale = currentCoreScale.current + pulseIntensity.current * 0.2 + Math.sin(time * 2) * 0.05
-      coreRef.current.scale.setScalar(scale)
-      coreRef.current.rotation.x = time * 0.1
-      coreRef.current.rotation.y = time * 0.15
+      const coreScale = 0.25 + pulseIntensity.current * 0.15 + Math.sin(time * 1.5) * 0.03
+      coreRef.current.scale.setScalar(coreScale)
+      coreRef.current.rotation.x = time * 0.08
+      coreRef.current.rotation.y = time * 0.12
       
       const coreMat = coreRef.current.material as THREE.MeshStandardMaterial
-      coreMat.emissiveIntensity = 0.3 + pulseIntensity.current * 0.4 + (isGenerating ? Math.sin(time * 8) * 0.2 : 0)
+      coreMat.emissiveIntensity = 0.2 + pulseIntensity.current * 0.3 + (isGenerating ? Math.sin(time * 6) * 0.15 : 0)
       coreMat.color.copy(currentColor.current)
       coreMat.emissive.copy(currentColor.current)
     }
@@ -165,30 +251,21 @@ export function Emergence() {
     // Update rings
     ringRefs.current.forEach((ring, i) => {
       if (ring) {
-        const ringScale = params.ringScale * (1 + i * 0.3) + pulseIntensity.current * 0.1
+        const ringScale = 0.4 * (1 + i * 0.4) + pulseIntensity.current * 0.08
         ring.scale.setScalar(ringScale)
-        ring.rotation.x = time * (0.1 + i * 0.05) + i * Math.PI * 0.3
-        ring.rotation.y = time * (0.15 + i * 0.03)
+        ring.rotation.x = time * (0.08 + i * 0.03) + i * Math.PI * 0.33
+        ring.rotation.y = time * (0.1 + i * 0.02)
         
         const ringMat = ring.material as THREE.MeshBasicMaterial
         ringMat.color.copy(currentColor.current)
-        ringMat.opacity = 0.15 - i * 0.03 + pulseIntensity.current * 0.1
+        ringMat.opacity = 0.1 - i * 0.02 + pulseIntensity.current * 0.05
       }
     })
-    
-    // Rotate entire group based on scroll
-    if (groupRef.current) {
-      groupRef.current.rotation.y = scrollProgress * Math.PI * 2 + time * 0.05
-      groupRef.current.rotation.x = Math.sin(scrollProgress * Math.PI) * 0.2
-      
-      // Position based on viewport
-      groupRef.current.position.x = viewport.width * 0.15
-    }
   })
   
   return (
     <group ref={groupRef} onPointerMove={handlePointerMove}>
-      {/* Particle cloud */}
+      {/* Particles */}
       <points ref={pointsRef}>
         <bufferGeometry>
           <bufferAttribute
@@ -199,42 +276,42 @@ export function Emergence() {
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.015}
+          size={0.012}
           color="#c9956c"
           transparent
-          opacity={0.6}
+          opacity={0.5}
           sizeAttenuation
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />
       </points>
       
-      {/* Central core */}
+      {/* Core */}
       <mesh ref={coreRef}>
-        <icosahedronGeometry args={[1, 2]} />
+        <icosahedronGeometry args={[1, 1]} />
         <meshStandardMaterial
           color="#c9956c"
           emissive="#c9956c"
-          emissiveIntensity={0.3}
-          metalness={0.8}
-          roughness={0.2}
+          emissiveIntensity={0.2}
+          metalness={0.9}
+          roughness={0.1}
           transparent
-          opacity={0.7}
+          opacity={0.6}
           wireframe
         />
       </mesh>
       
-      {/* Orbital rings */}
+      {/* Rings */}
       {[0, 1, 2].map((i) => (
         <mesh
           key={i}
           ref={(el) => { if (el) ringRefs.current[i] = el }}
         >
-          <torusGeometry args={[2 + i * 0.8, 0.01, 16, 100]} />
+          <torusGeometry args={[2 + i * 0.6, 0.008, 16, 80]} />
           <meshBasicMaterial
             color="#c9956c"
             transparent
-            opacity={0.15 - i * 0.03}
+            opacity={0.1 - i * 0.02}
             side={THREE.DoubleSide}
           />
         </mesh>

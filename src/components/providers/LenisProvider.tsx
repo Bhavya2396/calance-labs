@@ -7,7 +7,7 @@ interface LenisProviderProps {
   children: React.ReactNode
 }
 
-const SECTIONS: SectionName[] = ['hero', 'about', 'discovery', 'sandbox', 'work', 'contact']
+const SECTIONS: SectionName[] = ['hero', 'problem', 'approach', 'blueprint', 'sandbox', 'capabilities', 'work', 'contact']
 
 export function LenisProvider({ children }: LenisProviderProps) {
   const setScrollProgress = useStore((state) => state.setScrollProgress)
@@ -35,7 +35,7 @@ export function LenisProvider({ children }: LenisProviderProps) {
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll() // Initial call
+    handleScroll()
     
     return () => window.removeEventListener('scroll', handleScroll)
   }, [setScrollProgress, setCurrentSection])

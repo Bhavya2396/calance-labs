@@ -2,13 +2,14 @@
 
 import { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { Experience } from './Experience'
+import { Environment } from '@react-three/drei'
+import { Emergence } from './Emergence'
 
 export default function Scene() {
   return (
     <Canvas
       camera={{ 
-        position: [0, 0, 6], 
+        position: [0, 0, 5], 
         fov: 50,
         near: 0.1,
         far: 100
@@ -19,10 +20,12 @@ export default function Scene() {
         powerPreference: 'high-performance',
       }}
       dpr={[1, 1.5]}
-      style={{ background: '#050505' }}
+      style={{ background: '#030303' }}
     >
       <Suspense fallback={null}>
-        <Experience />
+        <Environment preset="night" />
+        <ambientLight intensity={0.1} />
+        <Emergence />
       </Suspense>
     </Canvas>
   )
