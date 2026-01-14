@@ -20,37 +20,37 @@ export function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 px-6 md:px-12 lg:px-20 py-4">
       <div className="flex items-center justify-between">
-        {/* Logo - Much larger */}
-        <button onClick={() => scrollTo('hero')}>
+        {/* Logo - Much bigger */}
+        <button onClick={() => scrollTo('hero')} className="relative">
           <Image
             src="/calance-logo.png"
             alt="Calance"
-            width={400}
-            height={120}
-            className="h-24 md:h-32 lg:h-36 w-auto"
+            width={320}
+            height={90}
+            className="h-20 md:h-28 lg:h-32 w-auto"
             priority
           />
         </button>
 
-        {/* Navigation - Appears on scroll */}
+        {/* Navigation */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: scrolled ? 1 : 0 }}
-          className="hidden md:flex items-center gap-1 px-3 py-2 bg-neutral-900/90 backdrop-blur-xl border border-white/10 rounded-full"
+          className="hidden md:flex items-center gap-1 px-3 py-2 bg-black/70 backdrop-blur-xl border border-white/10 rounded-full"
           style={{ pointerEvents: scrolled ? 'auto' : 'none' }}
         >
           {['about', 'discovery', 'sandbox', 'work'].map((id) => (
             <button
               key={id}
               onClick={() => scrollTo(id)}
-              className="px-4 py-2 text-xs text-white/60 hover:text-white uppercase tracking-wider transition-colors rounded-full hover:bg-white/5"
+              className="px-4 py-2 text-xs text-white/50 hover:text-white uppercase tracking-widest transition-colors rounded-full hover:bg-white/5"
             >
               {id}
             </button>
           ))}
           <button
             onClick={() => scrollTo('contact')}
-            className="px-5 py-2 text-xs text-white bg-orange-500 hover:bg-orange-400 uppercase tracking-wider rounded-full transition-colors ml-1"
+            className="ml-2 px-5 py-2 text-xs text-black bg-white uppercase tracking-widest rounded-full hover:bg-white/90 transition-colors"
           >
             Contact
           </button>

@@ -842,59 +842,67 @@ export function Sandbox() {
   const [activeCapability, setActiveCapability] = useState('chat')
   const companyData = useStore(state => state.companyData)
 
-  // Get company-specific prompts or defaults
   const prompts = companyData 
     ? getCompanyPrompts(companyData.company, companyData.industry)
     : getCompanyPrompts('Your Company', 'default')
 
-  const activeData = CAPABILITIES.find(c => c.id === activeCapability) || CAPABILITIES[0]
-
   return (
-    <section
-      id="sandbox"
-      className="relative min-h-screen flex flex-col px-6 md:px-12 lg:px-24 py-24"
-    >
-      <div className="w-full max-w-[1600px] mx-auto flex-1 flex flex-col">
+    <section id="sandbox" className="relative min-h-screen px-6 md:px-12 lg:px-20 py-24">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-          <div>
-            <span className="text-sm text-orange-400 font-medium tracking-wider">
-              // AI SANDBOX
-            </span>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-light mt-2 tracking-tight">
-              <span className="text-white">
-                {companyData ? `AI capabilities for ${companyData.company}` : 'Experience our AI capabilities.'}
-              </span>
-            </h2>
-          </div>
-          
+        <div className="mb-12">
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-xs text-white/40 tracking-widest uppercase mb-6"
+          >
+            AI Sandbox
+          </motion.p>
+
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-4xl md:text-5xl font-light tracking-tight mb-6"
+          >
+            {companyData ? `AI for ${companyData.company}` : 'Experience AI'}
+            <br />
+            <span className="text-white/50">capabilities.</span>
+          </motion.h2>
+
           {companyData && (
-            <div className="text-sm text-white/50">
-              Prompts customized for <span className="text-orange-400">{companyData.industry}</span> industry
-            </div>
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-sm text-white/50"
+            >
+              Prompts customized for <span className="text-[#c9956c]">{companyData.industry}</span> industry
+            </motion.p>
           )}
         </div>
 
-        {/* Capability Tabs - LARGER TEXT */}
-        <div className="flex gap-3 mb-8 overflow-x-auto pb-2">
+        {/* Capability Tabs */}
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
           {CAPABILITIES.map((cap) => {
             const Icon = cap.icon
+            const isActive = activeCapability === cap.id
             return (
               <button
                 key={cap.id}
                 onClick={() => setActiveCapability(cap.id)}
-                className={`flex items-center gap-4 px-6 py-4 border transition-all whitespace-nowrap ${
-                  activeCapability === cap.id
-                    ? 'bg-neutral-800 border-orange-500/50 text-white'
-                    : 'bg-neutral-900 border-white/10 text-white/50 hover:text-white hover:border-white/20'
+                className={`flex items-center gap-3 px-5 py-3 rounded-xl border transition-all whitespace-nowrap ${
+                  isActive
+                    ? 'bg-[#c9956c]/10 border-[#c9956c]/30 text-white'
+                    : 'bg-white/[0.02] border-white/[0.05] text-white/50 hover:text-white hover:border-white/10'
                 }`}
               >
-                <div className={`w-10 h-10 ${activeCapability === cap.id ? 'text-orange-400' : 'text-white/30'}`}>
-                  <Icon active={activeCapability === cap.id} />
+                <div className={`w-8 h-8 ${isActive ? 'text-[#c9956c]' : 'text-white/30'}`}>
+                  <Icon active={isActive} />
                 </div>
                 <div className="text-left">
-                  <div className="text-base font-medium">{cap.title}</div>
-                  <div className="text-sm text-white/40">{cap.subtitle}</div>
+                  <div className="text-sm font-medium">{cap.title}</div>
                 </div>
               </button>
             )
@@ -902,7 +910,7 @@ export function Sandbox() {
         </div>
 
         {/* Demo Area */}
-        <div className="flex-1 bg-neutral-900 border border-white/10 rounded-xl overflow-hidden min-h-[500px]">
+        <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl overflow-hidden min-h-[500px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeCapability}
@@ -921,22 +929,16 @@ export function Sandbox() {
           </AnimatePresence>
         </div>
 
-        {/* Footer CTA */}
+        {/* Footer */}
         <div className="mt-8 flex items-center justify-between">
-          <p className="text-xs text-white/40 uppercase tracking-wider">
-            {companyData 
-              ? `Showing ${companyData.industry} industry prompts` 
-              : 'Generate a blueprint to see company-specific prompts'}
+          <p className="text-xs text-white/30 tracking-widest uppercase">
+            {companyData ? `${companyData.industry} prompts` : 'Generate blueprint for custom prompts'}
           </p>
           <button
             onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-            className="flex items-center gap-2 px-6 py-3 bg-white text-black text-sm font-medium 
-                       tracking-wider hover:bg-white/90 transition-all"
+            className="px-6 py-3 bg-[#c9956c] text-white text-sm tracking-wider hover:bg-[#b8855c] transition-all rounded-full"
           >
-            LET'S TALK
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17L17 7M17 7H7M17 7v10" />
-            </svg>
+            LET'S TALK →
           </button>
         </div>
       </div>
