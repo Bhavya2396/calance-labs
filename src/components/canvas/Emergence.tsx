@@ -6,12 +6,10 @@ import * as THREE from 'three'
 import { useStore } from '@/store/useStore'
 
 // ========================================
-// FLOWING 3D PRESENCE
-// Moves and transforms with scroll
-// Never collides with text
+// FLOWING 3D PRESENCE - BRIGHTER & ENHANCED
 // ========================================
 
-const PARTICLE_COUNT = 2000
+const PARTICLE_COUNT = 2500
 
 export function Emergence() {
   const groupRef = useRef<THREE.Group>(null)
@@ -35,31 +33,33 @@ export function Emergence() {
     })
   }, [])
   
-  // Generate particles
-  const { positions, velocities } = useMemo(() => {
+  // Generate particles with more variety
+  const { positions, velocities, sizes } = useMemo(() => {
     const pos = new Float32Array(PARTICLE_COUNT * 3)
     const vel = new Float32Array(PARTICLE_COUNT * 3)
+    const siz = new Float32Array(PARTICLE_COUNT)
     
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       const i3 = i * 3
       const phi = Math.acos(1 - 2 * (i + 0.5) / PARTICLE_COUNT)
       const theta = Math.PI * (1 + Math.sqrt(5)) * i
-      const r = 1.5 + Math.random() * 0.5
+      const r = 1.5 + Math.random() * 0.8
       
       pos[i3] = r * Math.sin(phi) * Math.cos(theta)
       pos[i3 + 1] = r * Math.sin(phi) * Math.sin(theta)
       pos[i3 + 2] = r * Math.cos(phi)
       
-      vel[i3] = (Math.random() - 0.5) * 0.015
-      vel[i3 + 1] = (Math.random() - 0.5) * 0.015
-      vel[i3 + 2] = (Math.random() - 0.5) * 0.015
+      vel[i3] = (Math.random() - 0.5) * 0.02
+      vel[i3 + 1] = (Math.random() - 0.5) * 0.02
+      vel[i3 + 2] = (Math.random() - 0.5) * 0.02
+      
+      siz[i] = Math.random() * 0.5 + 0.5
     }
     
-    return { positions: pos, velocities: vel }
+    return { positions: pos, velocities: vel, sizes: siz }
   }, [])
   
-  // Section-based positioning
-  // Blueprint & Sandbox are full-width sections, so 3D moves to edges
+  // Section-based parameters
   const getSectionParams = useCallback((section: string) => {
     switch (section) {
       case 'hero':
@@ -68,8 +68,9 @@ export function Emergence() {
           y: 0,
           scale: 1.2,
           spread: 1,
-          speed: 0.8,
-          color: '#c9956c',
+          speed: 1,
+          color: '#f9a86c',
+          brightness: 1.2,
         }
       case 'problem':
         return { 
@@ -77,8 +78,9 @@ export function Emergence() {
           y: 0,
           scale: 1,
           spread: 1.3,
-          speed: 0.5,
-          color: '#7a7a7a',
+          speed: 0.6,
+          color: '#9a9a9a',
+          brightness: 1,
         }
       case 'approach':
         return { 
@@ -86,26 +88,29 @@ export function Emergence() {
           y: 0,
           scale: 0.9,
           spread: 0.8,
-          speed: 0.6,
-          color: '#a89078',
+          speed: 0.8,
+          color: '#d4a574',
+          brightness: 1.3,
         }
       case 'blueprint':
         return { 
-          x: viewport.width * 0.35, // Far right for 2-column layout
+          x: viewport.width * 0.35,
           y: -viewport.height * 0.1,
           scale: 0.8,
           spread: 0.6,
-          speed: 1.2,
-          color: '#d4a574',
+          speed: 1.5,
+          color: '#ffc085',
+          brightness: 1.5,
         }
       case 'sandbox':
         return { 
-          x: -viewport.width * 0.35, // Far left for 2-column layout
+          x: -viewport.width * 0.35,
           y: 0,
           scale: 0.9,
           spread: 0.9,
-          speed: 1,
-          color: '#c9956c',
+          speed: 1.2,
+          color: '#f9a86c',
+          brightness: 1.4,
         }
       case 'work':
         return { 
@@ -113,8 +118,9 @@ export function Emergence() {
           y: 0,
           scale: 0.8,
           spread: 1,
-          speed: 0.7,
-          color: '#b8a090',
+          speed: 0.9,
+          color: '#d8b090',
+          brightness: 1.2,
         }
       case 'contact':
         return { 
@@ -122,8 +128,9 @@ export function Emergence() {
           y: viewport.height * 0.2,
           scale: 1.4,
           spread: 0.5,
-          speed: 0.4,
-          color: '#d4a574',
+          speed: 0.5,
+          color: '#ffc085',
+          brightness: 1.6,
         }
       default:
         return { 
@@ -131,8 +138,9 @@ export function Emergence() {
           y: 0,
           scale: 1,
           spread: 1,
-          speed: 0.8,
-          color: '#c9956c',
+          speed: 1,
+          color: '#f9a86c',
+          brightness: 1.2,
         }
     }
   }, [viewport])
@@ -143,42 +151,46 @@ export function Emergence() {
   const currentScale = useRef(1)
   const currentSpread = useRef(1)
   const currentSpeed = useRef(1)
-  const currentColor = useRef(new THREE.Color('#c9956c'))
+  const currentColor = useRef(new THREE.Color('#f9a86c'))
+  const currentBrightness = useRef(1.2)
   const pulseIntensity = useRef(0)
   
   useFrame((state) => {
     const time = state.clock.elapsedTime
     const params = getSectionParams(currentSection)
     
-    // Smooth position transitions
+    // Smooth transitions
     currentX.current = THREE.MathUtils.lerp(currentX.current, params.x, 0.03)
     currentY.current = THREE.MathUtils.lerp(currentY.current, params.y, 0.03)
     currentScale.current = THREE.MathUtils.lerp(currentScale.current, params.scale, 0.03)
     currentSpread.current = THREE.MathUtils.lerp(currentSpread.current, params.spread, 0.02)
     currentSpeed.current = THREE.MathUtils.lerp(currentSpeed.current, params.speed, 0.02)
     currentColor.current.lerp(new THREE.Color(params.color), 0.02)
+    currentBrightness.current = THREE.MathUtils.lerp(currentBrightness.current, params.brightness, 0.02)
     
-    // Pulse effect
+    // Enhanced pulse effect
     if (pulseEffect || isGenerating) {
-      pulseIntensity.current = THREE.MathUtils.lerp(pulseIntensity.current, 1, 0.1)
+      pulseIntensity.current = THREE.MathUtils.lerp(pulseIntensity.current, 1, 0.15)
     } else {
       pulseIntensity.current = THREE.MathUtils.lerp(pulseIntensity.current, 0, 0.05)
     }
     
-    // Update group position
+    // Update group
     if (groupRef.current) {
       groupRef.current.position.x = currentX.current
       groupRef.current.position.y = currentY.current
       groupRef.current.scale.setScalar(currentScale.current)
       
-      // Gentle rotation
-      groupRef.current.rotation.y = time * 0.1 + scrollProgress * Math.PI
-      groupRef.current.rotation.x = Math.sin(scrollProgress * Math.PI * 2) * 0.1
+      // Enhanced rotation with wave motion
+      groupRef.current.rotation.y = time * 0.12 + scrollProgress * Math.PI * 1.5
+      groupRef.current.rotation.x = Math.sin(scrollProgress * Math.PI * 2) * 0.15 + Math.sin(time * 0.3) * 0.05
+      groupRef.current.rotation.z = Math.cos(time * 0.2) * 0.05
     }
     
-    // Update particles
+    // Update particles with enhanced motion
     if (pointsRef.current) {
       const posArray = pointsRef.current.geometry.attributes.position.array as Float32Array
+      const sizeArray = pointsRef.current.geometry.attributes.size.array as Float32Array
       
       for (let i = 0; i < PARTICLE_COUNT; i++) {
         const i3 = i * 3
@@ -187,59 +199,70 @@ export function Emergence() {
         const theta = Math.PI * (1 + Math.sqrt(5)) * i
         const baseR = 1.5 * currentSpread.current
         
-        const timeOffset = time * currentSpeed.current * 0.2
-        const breathe = Math.sin(time * 0.4 + i * 0.001) * 0.08
-        const pulse = Math.sin(time * 4 + i * 0.01) * pulseIntensity.current * 0.2
+        // Enhanced animations
+        const timeOffset = time * currentSpeed.current * 0.25
+        const breathe = Math.sin(time * 0.5 + i * 0.001) * 0.12
+        const pulse = Math.sin(time * 5 + i * 0.01) * pulseIntensity.current * 0.3
+        const wave = Math.sin(time * 0.8 + phi * 3) * 0.08
         
-        // Mouse influence (subtle)
-        const mouseInfluence = 0.15
+        // Stronger mouse influence
+        const mouseInfluence = 0.25
         const dx = mousePos.x * mouseInfluence
         const dy = mousePos.y * mouseInfluence
         
-        const r = baseR + breathe + pulse
-        const thetaAnimated = theta + timeOffset * 0.08
+        const r = baseR + breathe + pulse + wave
+        const thetaAnimated = theta + timeOffset * 0.1
         
         posArray[i3] = r * Math.sin(phi) * Math.cos(thetaAnimated) + dx * (1 - phi / Math.PI)
         posArray[i3 + 1] = r * Math.sin(phi) * Math.sin(thetaAnimated) + dy * Math.sin(phi)
         posArray[i3 + 2] = r * Math.cos(phi)
         
-        posArray[i3] += velocities[i3] * Math.sin(time * 1.5 + i)
-        posArray[i3 + 1] += velocities[i3 + 1] * Math.cos(time + i)
-        posArray[i3 + 2] += velocities[i3 + 2] * Math.sin(time * 1.2 + i)
+        // Add swirl motion
+        posArray[i3] += velocities[i3] * Math.sin(time * 2 + i) + Math.cos(time * 0.5 + i) * 0.01
+        posArray[i3 + 1] += velocities[i3 + 1] * Math.cos(time * 1.5 + i) + Math.sin(time * 0.7 + i) * 0.01
+        posArray[i3 + 2] += velocities[i3 + 2] * Math.sin(time * 1.8 + i)
+        
+        // Animate particle sizes
+        sizeArray[i] = sizes[i] * (1 + Math.sin(time * 2 + i * 0.1) * 0.3 + pulseIntensity.current * 0.5)
       }
       
       pointsRef.current.geometry.attributes.position.needsUpdate = true
+      pointsRef.current.geometry.attributes.size.needsUpdate = true
       
       const material = pointsRef.current.material as THREE.PointsMaterial
       material.color.copy(currentColor.current)
-      material.size = 0.012 + pulseIntensity.current * 0.008
-      material.opacity = 0.5 + pulseIntensity.current * 0.2
+      material.size = 0.015 * currentBrightness.current + pulseIntensity.current * 0.01
+      material.opacity = 0.7 * currentBrightness.current + pulseIntensity.current * 0.2
     }
     
-    // Update core
+    // Update core with enhanced glow
     if (coreRef.current) {
-      const coreScale = 0.25 + pulseIntensity.current * 0.15 + Math.sin(time * 1.5) * 0.03
+      const coreScale = 0.3 + pulseIntensity.current * 0.2 + Math.sin(time * 2) * 0.05
       coreRef.current.scale.setScalar(coreScale)
-      coreRef.current.rotation.x = time * 0.08
-      coreRef.current.rotation.y = time * 0.12
+      coreRef.current.rotation.x = time * 0.12 + Math.sin(time * 0.5) * 0.1
+      coreRef.current.rotation.y = time * 0.18 + Math.cos(time * 0.3) * 0.1
+      coreRef.current.rotation.z = time * 0.08
       
       const coreMat = coreRef.current.material as THREE.MeshStandardMaterial
-      coreMat.emissiveIntensity = 0.2 + pulseIntensity.current * 0.3 + (isGenerating ? Math.sin(time * 6) * 0.15 : 0)
+      coreMat.emissiveIntensity = 0.4 * currentBrightness.current + pulseIntensity.current * 0.4 + (isGenerating ? Math.sin(time * 8) * 0.2 : 0) + Math.sin(time * 3) * 0.1
       coreMat.color.copy(currentColor.current)
       coreMat.emissive.copy(currentColor.current)
+      coreMat.metalness = 0.95
+      coreMat.roughness = 0.05
     }
     
-    // Update rings
+    // Update rings with wave motion
     ringRefs.current.forEach((ring, i) => {
       if (ring) {
-        const ringScale = 0.4 * (1 + i * 0.4) + pulseIntensity.current * 0.08
+        const ringScale = 0.5 * (1 + i * 0.4) + pulseIntensity.current * 0.12 + Math.sin(time * 1.5 + i) * 0.05
         ring.scale.setScalar(ringScale)
-        ring.rotation.x = time * (0.08 + i * 0.03) + i * Math.PI * 0.33
-        ring.rotation.y = time * (0.1 + i * 0.02)
+        ring.rotation.x = time * (0.1 + i * 0.04) + i * Math.PI * 0.33 + Math.sin(time * 0.7) * 0.1
+        ring.rotation.y = time * (0.15 + i * 0.03) + Math.cos(time * 0.5) * 0.1
+        ring.rotation.z = Math.sin(time * 0.3 + i) * 0.15
         
         const ringMat = ring.material as THREE.MeshBasicMaterial
         ringMat.color.copy(currentColor.current)
-        ringMat.opacity = 0.1 - i * 0.02 + pulseIntensity.current * 0.05
+        ringMat.opacity = (0.15 - i * 0.03) * currentBrightness.current + pulseIntensity.current * 0.08
       }
     })
   })
@@ -255,29 +278,36 @@ export function Emergence() {
             array={positions}
             itemSize={3}
           />
+          <bufferAttribute
+            attach="attributes-size"
+            count={PARTICLE_COUNT}
+            array={sizes}
+            itemSize={1}
+          />
         </bufferGeometry>
         <pointsMaterial
-          size={0.012}
-          color="#c9956c"
+          size={0.015}
+          color="#f9a86c"
           transparent
-          opacity={0.5}
+          opacity={0.8}
           sizeAttenuation
           blending={THREE.AdditiveBlending}
           depthWrite={false}
+          vertexColors={false}
         />
       </points>
       
-      {/* Core */}
+      {/* Core with enhanced glow */}
       <mesh ref={coreRef}>
-        <icosahedronGeometry args={[1, 1]} />
+        <icosahedronGeometry args={[1, 2]} />
         <meshStandardMaterial
-          color="#c9956c"
-          emissive="#c9956c"
-          emissiveIntensity={0.2}
-          metalness={0.9}
-          roughness={0.1}
+          color="#f9a86c"
+          emissive="#f9a86c"
+          emissiveIntensity={0.5}
+          metalness={0.95}
+          roughness={0.05}
           transparent
-          opacity={0.6}
+          opacity={0.7}
           wireframe
         />
       </mesh>
@@ -288,11 +318,11 @@ export function Emergence() {
           key={i}
           ref={(el) => { if (el) ringRefs.current[i] = el }}
         >
-          <torusGeometry args={[2 + i * 0.6, 0.008, 16, 80]} />
+          <torusGeometry args={[2 + i * 0.7, 0.01, 16, 100]} />
           <meshBasicMaterial
-            color="#c9956c"
+            color="#f9a86c"
             transparent
-            opacity={0.1 - i * 0.02}
+            opacity={0.15 - i * 0.03}
             side={THREE.DoubleSide}
           />
         </mesh>

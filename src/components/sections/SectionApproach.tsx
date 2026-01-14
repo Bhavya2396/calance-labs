@@ -13,7 +13,7 @@ export function SectionApproach() {
   return (
     <section id="approach" className="relative min-h-screen flex items-center">
       {/* Content positioned left */}
-      <div className="p-6 md:p-12 lg:p-20 max-w-xl">
+      <div className="p-6 md:p-12 lg:p-20 max-w-2xl">
         <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -28,14 +28,14 @@ export function SectionApproach() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-20%" }}
           transition={{ delay: 0.1 }}
-          className="text-3xl md:text-4xl lg:text-5xl font-light leading-[1.1] tracking-tight mb-12"
+          className="text-4xl md:text-5xl lg:text-6xl font-light leading-[1.1] tracking-tight mb-12"
         >
           We listen first.
           <br />
           <span className="text-white/40">Then architect.</span>
         </motion.h2>
 
-        <div className="space-y-6">
+        <div className="space-y-8">
           {STEPS.map((step, i) => (
             <motion.div
               key={step.num}
@@ -43,16 +43,16 @@ export function SectionApproach() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-10%" }}
               transition={{ delay: 0.2 + i * 0.1 }}
-              className="flex items-start gap-4 group"
+              className="flex items-start gap-6 group"
             >
-              <span className="text-white/15 text-2xl font-light group-hover:text-[#c9956c]/50 transition-colors">
+              <span className="text-white/15 text-4xl font-light group-hover:text-[#f9a86c]/50 transition-colors">
                 {step.num}
               </span>
               <div>
-                <div className="text-white/80 text-sm font-medium mb-1 group-hover:text-white transition-colors">
+                <div className="text-white/80 text-xl font-medium mb-2 group-hover:text-white transition-colors">
                   {step.title}
                 </div>
-                <div className="text-white/30 text-xs">
+                <div className="text-white/40 text-base">
                   {step.desc}
                 </div>
               </div>

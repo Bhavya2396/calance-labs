@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence, useScroll } from 'framer-motion'
 import { useStore } from '@/store/useStore'
+import Image from 'next/image'
 
 // Sections
 import { SectionHero } from '@/components/sections/SectionHero'
@@ -63,9 +64,14 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 1.1 }}
-              className="text-white/20 text-sm tracking-[0.3em]"
             >
-              CALANCE
+              <Image
+                src="/calance-logo.png"
+                alt="Calance"
+                width={200}
+                height={100}
+                className="opacity-50"
+              />
             </motion.div>
           </motion.div>
         )}
@@ -77,15 +83,22 @@ export default function Home() {
       </div>
 
       {/* Minimal Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 p-6 md:p-10">
+      <nav className="fixed top-0 left-0 right-0 z-50 p-6 md:p-8 lg:p-10">
         <div className="flex items-center justify-between">
           <button 
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="text-white/80 text-sm tracking-[0.2em] hover:text-white transition-colors"
+            className="relative"
           >
-            CALANCE
+            <Image
+              src="/calance-logo.png"
+              alt="Calance"
+              width={280}
+              height={140}
+              className="h-16 md:h-20 lg:h-24 w-auto hover:opacity-80 transition-opacity"
+              priority
+            />
           </button>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 md:gap-6">
             <button
               onClick={() => document.getElementById('blueprint')?.scrollIntoView({ behavior: 'smooth' })}
               className="hidden md:block text-white/40 text-xs tracking-widest hover:text-white transition-colors"
