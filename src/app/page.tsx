@@ -15,77 +15,69 @@ import { Contact } from '@/components/sections/Contact'
 // Dynamically import the Canvas component with no SSR
 const Scene = dynamic(() => import('@/components/canvas/Scene'), {
   ssr: false,
-  loading: () => null, // No loading spinner, we handle this in the loader
+  loading: () => null,
 })
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
-  const [sceneReady, setSceneReady] = useState(false)
 
-  // Force scroll to top on mount
+  // Force scroll to top and handle loading
   useEffect(() => {
+    // Scroll to top immediately
     window.scrollTo(0, 0)
+    document.documentElement.scrollTop = 0
     document.body.style.overflow = 'hidden'
     
-    // Give 3D scene time to initialize
+    // Short delay for 3D to initialize, then reveal content
     const timer = setTimeout(() => {
-      setSceneReady(true)
-    }, 500)
+      setIsLoading(false)
+      document.body.style.overflow = ''
+    }, 1200)
 
-    return () => clearTimeout(timer)
-  }, [])
-
-  // After scene is ready, start the content reveal
-  useEffect(() => {
-    if (sceneReady) {
-      const timer = setTimeout(() => {
-        setIsLoading(false)
-        document.body.style.overflow = ''
-      }, 1500) // Let 3D animate in first
-      return () => clearTimeout(timer)
+    return () => {
+      clearTimeout(timer)
+      document.body.style.overflow = ''
     }
-  }, [sceneReady])
+  }, [])
 
   return (
     <LenisProvider>
-      {/* Loading Screen - Shows 3D first */}
+      {/* Elegant Loading Screen */}
       <AnimatePresence>
         {isLoading && (
           <motion.div
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: 'easeInOut' }}
-            className="fixed inset-0 z-[100] bg-black flex items-center justify-center pointer-events-none"
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="fixed inset-0 z-[100] bg-[#050505] flex items-center justify-center"
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4 }}
               className="text-center"
             >
               <motion.div
-                animate={{ 
-                  opacity: [0.3, 1, 0.3],
-                }}
+                animate={{ opacity: [0.4, 1, 0.4] }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                className="text-sm text-orange-400 tracking-[0.3em] uppercase"
+                className="text-xs text-white/40 tracking-[0.4em] uppercase font-light"
               >
-                Loading Experience
+                Calance Labs
               </motion.div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Fixed Canvas Layer - Z-index 0 */}
+      {/* Fixed Canvas Layer */}
       <div className="fixed inset-0 z-0">
         <Scene />
       </div>
 
-      {/* Navigation - Z-index 50 */}
+      {/* Navigation */}
       <Navbar />
 
-      {/* Scrollable HTML Overlay - Z-index 10 */}
+      {/* Scrollable Content */}
       <main className="relative z-10">
         <Hero isLoaded={!isLoading} />
         <About />
