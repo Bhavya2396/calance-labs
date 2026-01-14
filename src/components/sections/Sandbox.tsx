@@ -420,7 +420,7 @@ function ChatDemo({ prompts }: { prompts: string[] }) {
               className={`max-w-[85%] p-4 ${
                 msg.role === 'user'
                   ? 'bg-orange-500 text-white'
-                  : 'bg-neutral-800 text-white/90 border border-white/10'
+                  : 'bg-neutral-800 text-white/90 border border-white/10 rounded-xl'
               }`}
             >
               <p className="text-base leading-relaxed">{msg.content}</p>
@@ -429,7 +429,7 @@ function ChatDemo({ prompts }: { prompts: string[] }) {
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-neutral-800 border border-white/10 p-4 flex items-center gap-3">
+            <div className="bg-neutral-800 border border-white/10 rounded-xl p-4 flex items-center gap-3">
               <div className="flex gap-1">
                 {[0, 1, 2].map(i => (
                   <motion.div
@@ -455,7 +455,7 @@ function ChatDemo({ prompts }: { prompts: string[] }) {
               <button
                 key={i}
                 onClick={() => sendMessage(prompt)}
-                className="px-3 py-2 text-xs bg-neutral-800 hover:bg-neutral-700 border border-white/10 
+                className="px-3 py-2 text-xs bg-neutral-800 hover:bg-neutral-700 border border-white/10 rounded-xl 
                            text-white/70 hover:text-white transition-all"
               >
                 {prompt}
@@ -473,7 +473,7 @@ function ChatDemo({ prompts }: { prompts: string[] }) {
             onKeyDown={e => e.key === 'Enter' && sendMessage()}
             placeholder="Type a message..."
             disabled={loading}
-            className="flex-1 px-4 py-3 bg-neutral-800 border border-white/10 text-white placeholder-white/40
+            className="flex-1 px-4 py-3 bg-neutral-800 border border-white/10 rounded-xl text-white placeholder-white/40
                        focus:outline-none focus:border-orange-500/50 transition-colors text-sm"
           />
           <button
@@ -525,7 +525,7 @@ function AgentsDemo({ prompts }: { prompts: string[] }) {
           onChange={e => setTask(e.target.value)}
           placeholder={prompts[0]}
           disabled={running}
-          className="flex-1 px-4 py-3 bg-neutral-800 border border-white/10 text-white placeholder-white/40
+          className="flex-1 px-4 py-3 bg-neutral-800 border border-white/10 rounded-xl text-white placeholder-white/40
                      focus:outline-none focus:border-purple-500/50 transition-colors text-sm"
         />
         <button
@@ -547,7 +547,7 @@ function AgentsDemo({ prompts }: { prompts: string[] }) {
               <button
                 key={i}
                 onClick={() => runAgent(prompt)}
-                className="px-3 py-2 text-xs bg-neutral-800 hover:bg-neutral-700 border border-white/10 
+                className="px-3 py-2 text-xs bg-neutral-800 hover:bg-neutral-700 border border-white/10 rounded-xl 
                            text-white/70 hover:text-white transition-all"
               >
                 {prompt}
@@ -606,7 +606,7 @@ function VisionDemo({ prompts }: { prompts: string[] }) {
   return (
     <div className="h-full flex flex-col p-4">
       <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="relative w-full max-w-md aspect-video bg-neutral-800 border border-white/10 mb-4 flex items-center justify-center">
+        <div className="relative w-full max-w-md aspect-video bg-neutral-800 border border-white/10 rounded-xl mb-4 flex items-center justify-center">
           {analyzing && (
             <motion.div
               className="absolute left-0 w-full h-0.5 bg-teal-400"
@@ -636,7 +636,7 @@ function VisionDemo({ prompts }: { prompts: string[] }) {
 
         {result && (
           <div className="w-full max-w-md grid grid-cols-2 gap-4">
-            <div className="p-4 bg-neutral-800 border border-white/10">
+            <div className="p-4 bg-neutral-800 border border-white/10 rounded-xl">
               <div className="text-xs text-white/40 uppercase mb-2">Detected</div>
               <div className="flex flex-wrap gap-1">
                 {result.objects.map((obj, i) => (
@@ -644,7 +644,7 @@ function VisionDemo({ prompts }: { prompts: string[] }) {
                 ))}
               </div>
             </div>
-            <div className="p-4 bg-neutral-800 border border-white/10">
+            <div className="p-4 bg-neutral-800 border border-white/10 rounded-xl">
               <div className="text-xs text-white/40 uppercase mb-2">Confidence</div>
               <div className="text-2xl text-green-400 font-light">{result.confidence}%</div>
             </div>
@@ -656,7 +656,7 @@ function VisionDemo({ prompts }: { prompts: string[] }) {
         <div className="text-xs text-white/40 uppercase tracking-wider mb-2">Use cases:</div>
         <div className="flex flex-wrap gap-2">
           {prompts.map((prompt, i) => (
-            <span key={i} className="px-3 py-1 text-xs bg-neutral-800 border border-white/10 text-white/50">{prompt}</span>
+            <span key={i} className="px-3 py-1 text-xs bg-neutral-800 border border-white/10 rounded-xl text-white/50">{prompt}</span>
           ))}
         </div>
       </div>
@@ -684,7 +684,7 @@ function DocumentsDemo({ prompts }: { prompts: string[] }) {
   return (
     <div className="h-full flex flex-col p-4">
       <div className="flex-1 grid md:grid-cols-2 gap-4">
-        <div className="p-4 bg-neutral-800 border border-white/10">
+        <div className="p-4 bg-neutral-800 border border-white/10 rounded-xl">
           <div className="text-xs text-white/40 uppercase mb-4">Document Preview</div>
           <div className="space-y-3">
             {['Type', 'Number', 'Date', 'Amount'].map((field, i) => (
@@ -725,7 +725,7 @@ function DocumentsDemo({ prompts }: { prompts: string[] }) {
         <div className="text-xs text-white/40 uppercase tracking-wider mb-2">Capabilities:</div>
         <div className="flex flex-wrap gap-2">
           {prompts.map((prompt, i) => (
-            <span key={i} className="px-3 py-1 text-xs bg-neutral-800 border border-white/10 text-white/50">{prompt}</span>
+            <span key={i} className="px-3 py-1 text-xs bg-neutral-800 border border-white/10 rounded-xl text-white/50">{prompt}</span>
           ))}
         </div>
       </div>
@@ -763,7 +763,7 @@ function AnalyticsDemo({ prompts }: { prompts: string[] }) {
           onChange={e => setQuery(e.target.value)}
           placeholder={prompts[0]}
           disabled={loading}
-          className="flex-1 px-4 py-3 bg-neutral-800 border border-white/10 text-white placeholder-white/40
+          className="flex-1 px-4 py-3 bg-neutral-800 border border-white/10 rounded-xl text-white placeholder-white/40
                      focus:outline-none focus:border-rose-500/50 transition-colors text-sm"
         />
         <button
@@ -785,7 +785,7 @@ function AnalyticsDemo({ prompts }: { prompts: string[] }) {
               <button
                 key={i}
                 onClick={() => runAnalysis(prompt)}
-                className="px-3 py-2 text-xs bg-neutral-800 hover:bg-neutral-700 border border-white/10 
+                className="px-3 py-2 text-xs bg-neutral-800 hover:bg-neutral-700 border border-white/10 rounded-xl 
                            text-white/70 hover:text-white transition-all"
               >
                 {prompt}
@@ -796,7 +796,7 @@ function AnalyticsDemo({ prompts }: { prompts: string[] }) {
       )}
       
       <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="bg-neutral-800 border border-white/10 p-4 mb-4">
+        <div className="bg-neutral-800 border border-white/10 rounded-xl p-4 mb-4">
           <div className="flex items-end justify-between gap-2 h-32">
             {sampleData.map((val, i) => (
               <motion.div
@@ -812,7 +812,7 @@ function AnalyticsDemo({ prompts }: { prompts: string[] }) {
         
         {result && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-            <div className="p-4 bg-neutral-800 border border-white/10">
+            <div className="p-4 bg-neutral-800 border border-white/10 rounded-xl">
               <div className="text-xs text-white/40 uppercase mb-2">Key Insights</div>
               <ul className="space-y-1">
                 {result.insights.map((insight, i) => (
@@ -902,7 +902,7 @@ export function Sandbox() {
         </div>
 
         {/* Demo Area */}
-        <div className="flex-1 bg-neutral-900 border border-white/10 overflow-hidden min-h-[500px]">
+        <div className="flex-1 bg-neutral-900 border border-white/10 rounded-xl overflow-hidden min-h-[500px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeCapability}

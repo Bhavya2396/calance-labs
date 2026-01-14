@@ -326,7 +326,7 @@ export function Work() {
                 </p>
 
                 {/* Impact - In a box */}
-                <div className="inline-flex items-center gap-3 px-5 py-3 bg-neutral-900 border border-white/10">
+                <div className="inline-flex items-center gap-3 px-5 py-3 bg-neutral-900 border border-white/10 rounded-xl">
                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: project.color }} />
                   <span className="text-base font-medium" style={{ color: project.color }}>
                     {project.impact}
@@ -379,7 +379,7 @@ export function Work() {
 
           {/* Right Side - Visualization - DOUBLED SIZE */}
           <div className="max-w-2xl w-full">
-            <div className="w-full aspect-[16/10] bg-neutral-900 border border-white/10 p-8">
+            <div className="w-full aspect-[16/10] bg-neutral-900 border border-white/10 rounded-xl p-8">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeIndex}

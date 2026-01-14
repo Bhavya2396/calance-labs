@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, MotionValue } from 'framer-motion'
 import { useRef } from 'react'
 
 // ========================================
@@ -46,11 +46,11 @@ function ArchitectSvg() {
         </motion.g>
       ))}
       {/* Architecture blocks */}
-      <motion.rect x="15" y="15" width="25" height="25" fill="currentColor" opacity="0.7"
+      <motion.rect x="15" y="15" width="25" height="25" fill="currentColor" opacity="0.7" rx="3"
         initial={{ scale: 0 }} whileInView={{ scale: 1 }} transition={{ delay: 0.8, type: 'spring' }} viewport={{ once: true }} />
-      <motion.rect x="55" y="15" width="30" height="15" fill="currentColor" opacity="0.5"
+      <motion.rect x="55" y="15" width="30" height="15" fill="currentColor" opacity="0.5" rx="3"
         initial={{ scale: 0 }} whileInView={{ scale: 1 }} transition={{ delay: 0.9, type: 'spring' }} viewport={{ once: true }} />
-      <motion.rect x="35" y="55" width="40" height="25" fill="currentColor" opacity="0.6"
+      <motion.rect x="35" y="55" width="40" height="25" fill="currentColor" opacity="0.6" rx="3"
         initial={{ scale: 0 }} whileInView={{ scale: 1 }} transition={{ delay: 1, type: 'spring' }} viewport={{ once: true }} />
       {/* Connection lines */}
       <motion.path d="M27 40 L27 55 L35 55" fill="none" stroke="currentColor" strokeWidth="2"
@@ -65,7 +65,7 @@ function BuildSvg() {
   return (
     <svg viewBox="0 0 100 100" className="w-full h-full">
       {/* Terminal/Code window */}
-      <motion.rect x="10" y="15" width="80" height="70" fill="none" stroke="currentColor" strokeWidth="2" rx="4"
+      <motion.rect x="10" y="15" width="80" height="70" fill="none" stroke="currentColor" strokeWidth="2" rx="8"
         initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} transition={{ duration: 0.8 }} viewport={{ once: true }} />
       {/* Title bar */}
       <motion.line x1="10" y1="28" x2="90" y2="28" stroke="currentColor" strokeWidth="2"
@@ -78,7 +78,7 @@ function BuildSvg() {
       {/* Code lines */}
       {[38, 48, 58, 68].map((y, i) => (
         <motion.g key={i}>
-          <motion.rect x="18" y={y} width={[35, 50, 28, 45][i]} height="4" fill="currentColor" opacity="0.6" rx="1"
+          <motion.rect x="18" y={y} width={[35, 50, 28, 45][i]} height="4" fill="currentColor" opacity="0.6" rx="2"
             initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} 
             transition={{ delay: 0.8 + i * 0.15 }} viewport={{ once: true }} style={{ transformOrigin: 'left' }} />
         </motion.g>
@@ -100,7 +100,7 @@ function DeploySvg() {
         fill="none" stroke="currentColor" strokeWidth="3"
         initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} transition={{ duration: 1.2 }} viewport={{ once: true }} />
       {/* Server racks */}
-      <motion.rect x="30" y="70" width="40" height="20" fill="none" stroke="currentColor" strokeWidth="2" rx="2"
+      <motion.rect x="30" y="70" width="40" height="20" fill="none" stroke="currentColor" strokeWidth="2" rx="4"
         initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} transition={{ delay: 0.6 }} viewport={{ once: true }} />
       <motion.line x1="30" y1="78" x2="70" y2="78" stroke="currentColor" strokeWidth="1"
         initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} transition={{ delay: 0.8 }} viewport={{ once: true }} />
@@ -145,6 +145,36 @@ const PROCESS_STEPS = [
     icon: DeploySvg,
   },
 ]
+
+// Helper component for animated process step
+function ProcessStep({ 
+  step, 
+  index, 
+  progress 
+}: { 
+  step: typeof PROCESS_STEPS[0]
+  index: number
+  progress: MotionValue<number>
+}) {
+  const Icon = step.icon
+  const y = useTransform(progress, [0, 1], [50, 0])
+  
+  return (
+    <motion.div
+      style={{ opacity: progress, y }}
+      className="p-6 bg-neutral-900/80 border border-white/10 hover:border-orange-500/30 transition-all group rounded-2xl"
+    >
+      <div className="flex items-start justify-between mb-6">
+        <span className="text-4xl font-light text-orange-400">{step.number}</span>
+        <div className="w-20 h-20 text-orange-400 group-hover:text-orange-300 transition-colors">
+          <Icon />
+        </div>
+      </div>
+      <h3 className="text-2xl text-white font-medium mb-3">{step.title}</h3>
+      <p className="text-sm text-white/50 leading-relaxed">{step.description}</p>
+    </motion.div>
+  )
+}
 
 export function About() {
   const sectionRef = useRef<HTMLDivElement>(null)
@@ -226,28 +256,14 @@ export function About() {
             <div className="text-xs text-white/40 uppercase tracking-wider mb-6">Our Process</div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {PROCESS_STEPS.map((step, i) => {
-                const Icon = step.icon
-                return (
-                  <motion.div
-                    key={i}
-                    style={{ 
-                      opacity: stepProgresses[i],
-                      y: useTransform(stepProgresses[i], [0, 1], [50, 0])
-                    }}
-                    className="p-6 bg-neutral-900 border border-white/10 hover:border-orange-500/30 transition-all group"
-                  >
-                    <div className="flex items-start justify-between mb-6">
-                      <span className="text-4xl font-light text-orange-400">{step.number}</span>
-                      <div className="w-20 h-20 text-orange-400 group-hover:text-orange-300 transition-colors">
-                        <Icon />
-                      </div>
-                    </div>
-                    <h3 className="text-2xl text-white font-medium mb-3">{step.title}</h3>
-                    <p className="text-sm text-white/50 leading-relaxed">{step.description}</p>
-                  </motion.div>
-                )
-              })}
+              {PROCESS_STEPS.map((step, i) => (
+                <ProcessStep 
+                  key={i} 
+                  step={step} 
+                  index={i} 
+                  progress={stepProgresses[i]} 
+                />
+              ))}
             </div>
           </div>
         </motion.div>
