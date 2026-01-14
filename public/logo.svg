@@ -1,0 +1,11 @@
+<svg width="1024" height="420" viewBox="0 0 1024 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Orange circular shape -->
+  <path d="M175 210C175 271.856 138.513 325 85 325C85 263.144 121.487 210 175 210Z" fill="#F97316"/>
+  <path d="M175 95C228.513 95 265 148.144 265 210C265 271.856 228.513 325 175 325C175 263.144 175 156.856 175 95Z" fill="#F97316"/>
+  
+  <!-- White circular shape -->
+  <circle cx="120" cy="155" r="45" fill="white"/>
+  
+  <!-- Calance text -->
+  <text x="360" y="260" font-family="Arial, sans-serif" font-size="180" font-weight="300" fill="white" letter-spacing="-2">callance</text>
+</svg>

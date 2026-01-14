@@ -1,0 +1,35 @@
+AI CAPABILITIES
+===============
+
+1. AGENTIC WORKFLOWS
+  
+   → Generative AI for analytics
+   → generate n8n/langflow worklows
+
+2. VISION AI
+   
+   → Picture Inferencing
+   video inferencing 
+   → Defects can be identified
+
+3. CYBER SECURITY
+   → AI Powered Security chatbots
+    → Explaining alerts
+    → generating incident reports
+    → querryign logs using nlp
+   → Email Spam detection/fraud
+
+4. CONVERSATIONAL
+   → Multilingual Chatbots (tailored to use case)
+  
+
+5. EMBEDDED AI / IoT (Part of Vision AI)
+   → SLMs to catch traffic violation in real-time about information
+   → Assembly Line Irregularity detection
+   → Product defect
+   → Smart Energy Meters (Detect power theft by meter bypass etc)
+   → Industrial Predictive Maintenance
+   → Smart Parking availability
+
+
+
