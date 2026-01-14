@@ -59,12 +59,12 @@ export function Emergence() {
     return { positions: pos, velocities: vel, sizes: siz }
   }, [])
   
-  // Section-based parameters
+  // Section-based parameters - MOVE FAR AWAY from sandbox and work
   const getSectionParams = useCallback((section: string) => {
     switch (section) {
       case 'hero':
         return { 
-          x: viewport.width * 0.25, 
+          x: viewport.width * 0.28, 
           y: 0,
           scale: 1.2,
           spread: 1,
@@ -74,7 +74,7 @@ export function Emergence() {
         }
       case 'problem':
         return { 
-          x: -viewport.width * 0.25,
+          x: -viewport.width * 0.28,
           y: 0,
           scale: 1,
           spread: 1.3,
@@ -84,7 +84,7 @@ export function Emergence() {
         }
       case 'approach':
         return { 
-          x: viewport.width * 0.25,
+          x: viewport.width * 0.28,
           y: 0,
           scale: 0.9,
           spread: 0.8,
@@ -94,9 +94,9 @@ export function Emergence() {
         }
       case 'blueprint':
         return { 
-          x: viewport.width * 0.35,
-          y: -viewport.height * 0.1,
-          scale: 0.8,
+          x: viewport.width * 0.42, // Far right
+          y: -viewport.height * 0.12,
+          scale: 0.7,
           spread: 0.6,
           speed: 1.5,
           color: '#ffc085',
@@ -104,20 +104,20 @@ export function Emergence() {
         }
       case 'sandbox':
         return { 
-          x: -viewport.width * 0.35,
-          y: 0,
-          scale: 0.9,
-          spread: 0.9,
+          x: -viewport.width * 0.45, // Far left - away from content
+          y: viewport.height * 0.15, // Move up
+          scale: 0.6, // Smaller
+          spread: 0.7,
           speed: 1.2,
           color: '#f9a86c',
           brightness: 1.4,
         }
       case 'work':
         return { 
-          x: viewport.width * 0.35,
-          y: 0,
-          scale: 0.8,
-          spread: 1,
+          x: viewport.width * 0.45, // Far right - away from content
+          y: viewport.height * 0.1, // Move up
+          scale: 0.6, // Smaller
+          spread: 0.8,
           speed: 0.9,
           color: '#d8b090',
           brightness: 1.2,
@@ -125,7 +125,7 @@ export function Emergence() {
       case 'contact':
         return { 
           x: 0,
-          y: viewport.height * 0.2,
+          y: viewport.height * 0.25,
           scale: 1.4,
           spread: 0.5,
           speed: 0.5,

@@ -68,8 +68,8 @@ export default function Home() {
               <Image
                 src="/calance-logo.png"
                 alt="Calance"
-                width={200}
-                height={100}
+                width={300}
+                height={150}
                 className="opacity-50"
               />
             </motion.div>
@@ -82,7 +82,7 @@ export default function Home() {
         <Scene />
       </div>
 
-      {/* Minimal Navigation */}
+      {/* Minimal Navigation with MUCH LARGER LOGO */}
       <nav className="fixed top-0 left-0 right-0 z-50 p-6 md:p-8 lg:p-10">
         <div className="flex items-center justify-between">
           <button 
@@ -92,9 +92,9 @@ export default function Home() {
             <Image
               src="/calance-logo.png"
               alt="Calance"
-              width={280}
-              height={140}
-              className="h-16 md:h-20 lg:h-24 w-auto hover:opacity-80 transition-opacity"
+              width={400}
+              height={200}
+              className="h-20 md:h-28 lg:h-36 w-auto hover:opacity-80 transition-opacity"
               priority
             />
           </button>
