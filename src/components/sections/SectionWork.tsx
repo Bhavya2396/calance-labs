@@ -223,7 +223,7 @@ export function SectionWork() {
   const Visualization = activeProject.visualization
 
   return (
-    <section id="work" className="relative min-h-screen py-20">
+    <section id="work" className="relative min-h-screen py-20 bg-[#f9a86c]">
       <div className="px-6 md:px-12 lg:px-20 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-12">
@@ -231,7 +231,7 @@ export function SectionWork() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-white/40 text-xs tracking-[0.3em] mb-6"
+            className="text-black/60 text-xs tracking-[0.3em] mb-6"
           >
             OUR WORK
           </motion.p>
@@ -242,16 +242,16 @@ export function SectionWork() {
             viewport={{ once: true }}
             className="text-3xl md:text-4xl font-light leading-[1.1] tracking-tight mb-4"
           >
-            <span className="text-[#f9a86c]">Real solutions.</span>
+            <span className="text-white">Real solutions.</span>
             <br />
-            <span className="text-white/50">Real impact.</span>
+            <span className="text-black/70">Real impact.</span>
           </motion.h2>
 
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-white/50 text-sm max-w-lg"
+            className="text-black/70 text-sm max-w-lg"
           >
             We've helped organizations across industries transform their operations 
             with AI-powered solutions that deliver measurable results.
@@ -271,28 +271,28 @@ export function SectionWork() {
                 onClick={() => setActiveIndex(i)}
                 className={`w-full text-left p-5 rounded-xl border transition-all ${
                   activeIndex === i
-                    ? 'bg-[#c9956c]/10 border-[#c9956c]/30'
-                    : 'bg-white/[0.02] border-white/5 hover:border-white/10'
+                    ? 'bg-white/20 border-white/40'
+                    : 'bg-black/5 border-black/10 hover:border-black/20'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className={`text-sm font-medium ${activeIndex === i ? 'text-white' : 'text-white/60'}`}>
+                  <span className={`text-sm font-medium ${activeIndex === i ? 'text-white' : 'text-black/70'}`}>
                     {project.client}
                   </span>
-                  <span className="text-white/30 text-xs">{project.year}</span>
+                  <span className="text-black/50 text-xs">{project.year}</span>
                 </div>
-                <div className={`text-sm mb-2 ${activeIndex === i ? 'text-white/80' : 'text-white/50'}`}>
+                <div className={`text-sm mb-2 ${activeIndex === i ? 'text-white' : 'text-black/60'}`}>
                   {project.title}
                 </div>
                 {activeIndex === i && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
-                    className="pt-3 border-t border-white/5 mt-3"
+                    className="pt-3 border-t border-white/20 mt-3"
                   >
                     <div className="flex flex-wrap gap-2">
                       {project.tech.map((tech) => (
-                        <span key={tech} className="px-2 py-1 text-xs text-[#c9956c] bg-[#c9956c]/10 rounded">
+                        <span key={tech} className="px-2 py-1 text-xs text-white bg-white/20 rounded">
                           {tech}
                         </span>
                       ))}
@@ -310,27 +310,27 @@ export function SectionWork() {
             viewport={{ once: true }}
             className="lg:sticky lg:top-24"
           >
-            <div className="bg-white/[0.02] border border-white/5 rounded-2xl overflow-hidden">
+            <div className="bg-black/5 border border-black/10 rounded-2xl overflow-hidden">
               {/* Visualization */}
-              <div className="h-[200px] p-6 border-b border-white/5 bg-black/20">
+              <div className="h-[200px] p-6 border-b border-black/10 bg-white/10">
                 <Visualization active={true} />
               </div>
               
               {/* Details */}
               <div className="p-6 space-y-4">
                 <div>
-                  <p className="text-[#f9a86c] text-xs tracking-wider mb-1">{activeProject.client}</p>
-                  <h3 className="text-xl text-white font-medium">{activeProject.title}</h3>
+                  <p className="text-white text-xs tracking-wider mb-1">{activeProject.client}</p>
+                  <h3 className="text-xl text-black font-medium">{activeProject.title}</h3>
                 </div>
                 
-                <p className="text-white/60 text-sm leading-relaxed">
+                <p className="text-black/70 text-sm leading-relaxed">
                   {activeProject.description}
                 </p>
                 
-                <div className="flex items-center gap-4 pt-4 border-t border-white/10">
+                <div className="flex items-center gap-4 pt-4 border-t border-black/10">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-[#f9a86c] rounded-full" />
-                    <span className="text-white font-medium">{activeProject.impact}</span>
+                    <div className="w-3 h-3 bg-white rounded-full" />
+                    <span className="text-black font-medium">{activeProject.impact}</span>
                   </div>
                 </div>
               </div>

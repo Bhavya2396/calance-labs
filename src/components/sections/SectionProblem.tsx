@@ -4,14 +4,14 @@ import { motion } from 'framer-motion'
 
 export function SectionProblem() {
   return (
-    <section id="problem" className="relative min-h-screen flex items-center justify-end">
+    <section id="problem" className="relative min-h-screen flex items-center justify-end bg-[#f9a86c]">
       {/* Content positioned right, away from 3D on left */}
       <div className="p-6 md:p-12 lg:p-20 max-w-lg text-right">
         <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-20%" }}
-          className="text-white/40 text-xs tracking-[0.3em] mb-6"
+          className="text-black/60 text-xs tracking-[0.3em] mb-6"
         >
           THE CHALLENGE
         </motion.p>
@@ -25,9 +25,9 @@ export function SectionProblem() {
         >
           Most businesses know
           <br />
-          <span className="text-[#f9a86c]">AI can help.</span>
+          <span className="text-white">AI can help.</span>
           <br />
-          <span className="text-white/50">But don't know where to start.</span>
+          <span className="text-black/70">But don't know where to start.</span>
         </motion.h2>
 
         <motion.p
@@ -35,7 +35,7 @@ export function SectionProblem() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-20%" }}
           transition={{ delay: 0.2 }}
-          className="text-white/50 text-sm leading-relaxed"
+          className="text-black/70 text-sm leading-relaxed"
         >
           The technology exists. The potential is clear.
           <br />

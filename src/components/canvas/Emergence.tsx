@@ -120,13 +120,24 @@ export function Emergence() {
       
       const params = mobileParams[section as keyof typeof mobileParams] || mobileParams.hero
       
+      // Mobile color scheme based on section backgrounds
+      const mobileColors: Record<string, string> = {
+        hero: '#f9a86c',
+        problem: '#ffffff',
+        approach: '#f9a86c',
+        blueprint: '#ffffff',
+        sandbox: '#f9a86c',
+        work: '#ffffff',
+        contact: '#f9a86c',
+      }
+      
       return {
         x: params.x,
         y: params.y,
         scale: params.scale * responsiveScale,
         spread: 0.9,
         speed: 0.8,
-        color: '#f9a86c',
+        color: mobileColors[section] || '#f9a86c',
         brightness: params.brightness,
       }
     }
@@ -142,7 +153,7 @@ export function Emergence() {
           scale: 1.2 * responsiveScale,
           spread: 1,
           speed: 1,
-          color: '#f9a86c',
+          color: '#f9a86c', // Orange 3D on black background
           brightness: 1.2,
         }
       case 'problem':
@@ -152,8 +163,8 @@ export function Emergence() {
           scale: 1 * responsiveScale,
           spread: 1.3,
           speed: 0.6,
-          color: '#9a9a9a',
-          brightness: 1,
+          color: '#ffffff', // White 3D on orange background
+          brightness: 1.4,
         }
       case 'approach':
         return { 
@@ -162,7 +173,7 @@ export function Emergence() {
           scale: 0.9 * responsiveScale,
           spread: 0.8,
           speed: 0.8,
-          color: '#d4a574',
+          color: '#f9a86c', // Orange 3D on black background
           brightness: 1.3,
         }
       case 'blueprint':
@@ -172,7 +183,7 @@ export function Emergence() {
           scale: 0.7 * responsiveScale,
           spread: 0.6,
           speed: 1.5,
-          color: '#ffc085',
+          color: '#ffffff', // White 3D on dark gray background
           brightness: 1.5,
         }
       case 'sandbox':
@@ -182,7 +193,7 @@ export function Emergence() {
           scale: 0.5 * responsiveScale,
           spread: 0.7,
           speed: 1.2,
-          color: '#f9a86c',
+          color: '#f9a86c', // Orange 3D on black background
           brightness: 1.4,
         }
       case 'work':
@@ -192,8 +203,8 @@ export function Emergence() {
           scale: 0.5 * responsiveScale,
           spread: 0.8,
           speed: 0.9,
-          color: '#d8b090',
-          brightness: 1.2,
+          color: '#ffffff', // White 3D on orange background
+          brightness: 1.3,
         }
       case 'contact':
         return { 
@@ -202,7 +213,7 @@ export function Emergence() {
           scale: 1.4 * responsiveScale,
           spread: 0.5,
           speed: 0.5,
-          color: '#ffc085',
+          color: '#f9a86c', // Orange 3D on black background
           brightness: 1.6,
         }
       default:
