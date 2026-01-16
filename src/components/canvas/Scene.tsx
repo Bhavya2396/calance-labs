@@ -16,11 +16,11 @@ export default function Scene() {
       }}
       gl={{
         antialias: true,
-        alpha: false,
+        alpha: true,
         powerPreference: 'high-performance',
       }}
       dpr={[1, 1.5]}
-      style={{ background: '#030303' }}
+      style={{ background: 'transparent' }}
     >
       <Suspense fallback={null}>
         <Environment preset="night" />
