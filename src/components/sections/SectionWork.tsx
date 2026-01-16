@@ -231,7 +231,7 @@ export function SectionWork() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-white/30 text-xs tracking-[0.3em] mb-6"
+            className="text-white/40 text-xs tracking-[0.3em] mb-6"
           >
             OUR WORK
           </motion.p>
@@ -242,16 +242,16 @@ export function SectionWork() {
             viewport={{ once: true }}
             className="text-3xl md:text-4xl font-light leading-[1.1] tracking-tight mb-4"
           >
-            Real solutions.
+            <span className="text-[#f9a86c]">Real solutions.</span>
             <br />
-            <span className="text-white/40">Real impact.</span>
+            <span className="text-white/50">Real impact.</span>
           </motion.h2>
 
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-white/40 text-sm max-w-lg"
+            className="text-white/50 text-sm max-w-lg"
           >
             We've helped organizations across industries transform their operations 
             with AI-powered solutions that deliver measurable results.
@@ -279,9 +279,9 @@ export function SectionWork() {
                   <span className={`text-sm font-medium ${activeIndex === i ? 'text-white' : 'text-white/60'}`}>
                     {project.client}
                   </span>
-                  <span className="text-white/20 text-xs">{project.year}</span>
+                  <span className="text-white/30 text-xs">{project.year}</span>
                 </div>
-                <div className={`text-sm mb-2 ${activeIndex === i ? 'text-white/70' : 'text-white/40'}`}>
+                <div className={`text-sm mb-2 ${activeIndex === i ? 'text-white/80' : 'text-white/50'}`}>
                   {project.title}
                 </div>
                 {activeIndex === i && (
@@ -319,17 +319,17 @@ export function SectionWork() {
               {/* Details */}
               <div className="p-6 space-y-4">
                 <div>
-                  <p className="text-[#c9956c] text-xs tracking-wider mb-1">{activeProject.client}</p>
+                  <p className="text-[#f9a86c] text-xs tracking-wider mb-1">{activeProject.client}</p>
                   <h3 className="text-xl text-white font-medium">{activeProject.title}</h3>
                 </div>
                 
-                <p className="text-white/50 text-sm leading-relaxed">
+                <p className="text-white/60 text-sm leading-relaxed">
                   {activeProject.description}
                 </p>
                 
-                <div className="flex items-center gap-4 pt-4 border-t border-white/5">
+                <div className="flex items-center gap-4 pt-4 border-t border-white/10">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-[#c9956c] rounded-full" />
+                    <div className="w-3 h-3 bg-[#f9a86c] rounded-full" />
                     <span className="text-white font-medium">{activeProject.impact}</span>
                   </div>
                 </div>

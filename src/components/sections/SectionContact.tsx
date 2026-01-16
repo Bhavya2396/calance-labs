@@ -15,7 +15,7 @@ export function SectionContact() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true, margin: "-20%" }}
-            className="text-white/30 text-xs tracking-[0.3em] mb-6"
+            className="text-white/40 text-xs tracking-[0.3em] mb-6"
           >
             START THE DIALOGUE
           </motion.p>
@@ -29,7 +29,7 @@ export function SectionContact() {
           >
             Ready to build with
             <br />
-            <span className="text-white/40">intelligence?</span>
+            <span className="text-[#f9a86c]">intelligence</span>?
           </motion.h2>
 
           <motion.p
@@ -37,10 +37,11 @@ export function SectionContact() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true, margin: "-20%" }}
             transition={{ delay: 0.2 }}
-            className="text-white/40 text-sm leading-relaxed mb-10 max-w-md mx-auto"
+            className="text-white/50 text-sm leading-relaxed mb-10 max-w-md mx-auto"
           >
             Let's discuss how AI can transform your operations.
-            Custom solutions, real results.
+            <br />
+            <span className="text-white/60">Custom solutions, real results.</span>
           </motion.p>
 
           <motion.div
@@ -52,13 +53,13 @@ export function SectionContact() {
           >
             <a
               href="mailto:connect@calance.com"
-              className="px-8 py-4 bg-white text-black text-xs tracking-widest hover:bg-white/90 transition-all rounded-full"
+              className="px-8 py-4 bg-[#f9a86c] text-white text-xs tracking-widest hover:bg-[#e89758] transition-all rounded-full"
             >
               CONNECT@CALANCE.COM
             </a>
             <button
               onClick={() => document.getElementById('blueprint')?.scrollIntoView({ behavior: 'smooth' })}
-              className="px-8 py-4 border border-white/20 text-white text-xs tracking-widest hover:bg-white/5 transition-all rounded-full"
+              className="px-8 py-4 border border-white/30 text-white text-xs tracking-widest hover:bg-white/5 hover:border-[#f9a86c]/50 transition-all rounded-full"
             >
               GET AI BLUEPRINT
             </button>
@@ -70,9 +71,9 @@ export function SectionContact() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.4 }}
-            className="pt-8 border-t border-white/5"
+            className="pt-8 border-t border-white/10"
           >
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-white/20 text-xs">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-white/30 text-xs">
               <div>
                 888 S. Disneyland Drive, Suite 500, Anaheim, CA
               </div>
@@ -84,7 +85,7 @@ export function SectionContact() {
                 <span>India</span>
               </div>
             </div>
-            <div className="mt-6 text-white/15 text-xs">
+            <div className="mt-6 text-white/20 text-xs">
               © 2024 Calance. All rights reserved.
             </div>
           </motion.div>

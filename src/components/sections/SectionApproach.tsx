@@ -18,7 +18,7 @@ export function SectionApproach() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-20%" }}
-          className="text-white/30 text-xs tracking-[0.3em] mb-6"
+          className="text-white/40 text-xs tracking-[0.3em] mb-6"
         >
           OUR APPROACH
         </motion.p>
@@ -30,9 +30,9 @@ export function SectionApproach() {
           transition={{ delay: 0.1 }}
           className="text-4xl md:text-5xl lg:text-6xl font-light leading-[1.1] tracking-tight mb-12"
         >
-          We listen first.
+          We <span className="text-[#f9a86c]">listen</span> first.
           <br />
-          <span className="text-white/40">Then architect.</span>
+          <span className="text-white/50">Then architect.</span>
         </motion.h2>
 
         <div className="space-y-8">
@@ -45,14 +45,14 @@ export function SectionApproach() {
               transition={{ delay: 0.2 + i * 0.1 }}
               className="flex items-start gap-6 group"
             >
-              <span className="text-white/15 text-4xl font-light group-hover:text-[#f9a86c]/50 transition-colors">
+              <span className="text-white/20 text-4xl font-light group-hover:text-[#f9a86c] transition-colors">
                 {step.num}
               </span>
               <div>
-                <div className="text-white/80 text-xl font-medium mb-2 group-hover:text-white transition-colors">
+                <div className="text-white/90 text-xl font-medium mb-2 group-hover:text-white transition-colors">
                   {step.title}
                 </div>
-                <div className="text-white/40 text-base">
+                <div className="text-white/50 text-base">
                   {step.desc}
                 </div>
               </div>

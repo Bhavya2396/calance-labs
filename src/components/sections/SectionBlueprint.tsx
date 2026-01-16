@@ -164,7 +164,7 @@ export function SectionBlueprint() {
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="text-white/30 text-xs tracking-[0.3em] mb-6"
+              className="text-white/40 text-xs tracking-[0.3em] mb-6"
             >
               AI BLUEPRINT
             </motion.p>
@@ -175,16 +175,16 @@ export function SectionBlueprint() {
               viewport={{ once: true }}
               className="text-3xl md:text-4xl font-light leading-[1.1] tracking-tight mb-6"
             >
-              Your AI roadmap
+              Your <span className="text-[#f9a86c]">AI roadmap</span>
               <br />
-              <span className="text-white/40">generated instantly.</span>
+              <span className="text-white/50">generated instantly.</span>
             </motion.h2>
 
             <motion.p
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="text-white/40 text-sm leading-relaxed mb-8"
+              className="text-white/50 text-sm leading-relaxed mb-8"
             >
               Enter your company name. Our AI analyzes your industry and generates 
               a custom implementation blueprint with architecture diagram.
@@ -250,7 +250,7 @@ export function SectionBlueprint() {
                   </div>
 
                   {/* Summary */}
-                  <p className="text-white/50 text-sm leading-relaxed">
+                  <p className="text-white/60 text-sm leading-relaxed">
                     {companyData.summary}
                   </p>
 

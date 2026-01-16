@@ -11,7 +11,7 @@ export function SectionProblem() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-20%" }}
-          className="text-white/30 text-xs tracking-[0.3em] mb-6"
+          className="text-white/40 text-xs tracking-[0.3em] mb-6"
         >
           THE CHALLENGE
         </motion.p>
@@ -25,9 +25,9 @@ export function SectionProblem() {
         >
           Most businesses know
           <br />
-          AI can help.
+          <span className="text-[#f9a86c]">AI can help.</span>
           <br />
-          <span className="text-white/40">But don't know where to start.</span>
+          <span className="text-white/50">But don't know where to start.</span>
         </motion.h2>
 
         <motion.p
@@ -35,7 +35,7 @@ export function SectionProblem() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-20%" }}
           transition={{ delay: 0.2 }}
-          className="text-white/40 text-sm leading-relaxed"
+          className="text-white/50 text-sm leading-relaxed"
         >
           The technology exists. The potential is clear.
           <br />
