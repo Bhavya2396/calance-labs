@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 
 export function SectionProblem() {
   return (
-    <section id="problem" className="relative min-h-screen flex items-center justify-end bg-[#f9a86c]">
+    <section id="problem" className="relative min-h-screen flex items-center justify-end bg-[#d97839]">
       {/* Content positioned right, away from 3D on left */}
       <div className="p-6 md:p-12 lg:p-20 max-w-lg text-right">
         <motion.p

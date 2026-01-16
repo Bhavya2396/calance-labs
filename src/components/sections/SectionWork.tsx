@@ -16,9 +16,9 @@ function TrafficVisualization({ active }: { active: boolean }) {
       ))}
       
       {/* Roads */}
-      <motion.path d="M0 75 L200 75" stroke={active ? 'rgba(201,149,108,0.4)' : 'rgba(255,255,255,0.1)'} strokeWidth="20"
+      <motion.path d="M0 75 L200 75" stroke={active ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.15)'} strokeWidth="20"
         initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.8 }} />
-      <motion.path d="M100 0 L100 150" stroke={active ? 'rgba(201,149,108,0.4)' : 'rgba(255,255,255,0.1)'} strokeWidth="20"
+      <motion.path d="M100 0 L100 150" stroke={active ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.15)'} strokeWidth="20"
         initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.8, delay: 0.2 }} />
       
       {/* Intersection */}
@@ -52,20 +52,20 @@ function MaintenanceVisualization({ active }: { active: boolean }) {
     <svg viewBox="0 0 200 150" className="w-full h-full">
       {/* Machine outline */}
       <motion.rect x="30" y="40" width="140" height="80" rx="8" fill="none" 
-        stroke={active ? '#c9956c' : 'rgba(255,255,255,0.2)'} strokeWidth="2"
+        stroke={active ? '#ffffff' : 'rgba(0,0,0,0.3)'} strokeWidth="3"
         initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.8 }} />
       
       {/* Gears */}
-      <motion.circle cx="70" cy="80" r="20" fill="none" stroke={active ? '#c9956c' : 'rgba(255,255,255,0.2)'} strokeWidth="2"
+      <motion.circle cx="70" cy="80" r="20" fill="none" stroke={active ? '#ffffff' : 'rgba(0,0,0,0.3)'} strokeWidth="3"
         animate={{ rotate: active ? 360 : 0 }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }} />
-      <motion.circle cx="120" cy="80" r="15" fill="none" stroke={active ? '#c9956c' : 'rgba(255,255,255,0.2)'} strokeWidth="2"
+      <motion.circle cx="120" cy="80" r="15" fill="none" stroke={active ? '#ffffff' : 'rgba(0,0,0,0.3)'} strokeWidth="3"
         animate={{ rotate: active ? -360 : 0 }} transition={{ duration: 3, repeat: Infinity, ease: 'linear' }} />
       
       {/* Gear teeth */}
       {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => (
         <motion.line key={i} x1={70 + 20 * Math.cos(angle * Math.PI / 180)} y1={80 + 20 * Math.sin(angle * Math.PI / 180)}
           x2={70 + 25 * Math.cos(angle * Math.PI / 180)} y2={80 + 25 * Math.sin(angle * Math.PI / 180)}
-          stroke={active ? '#c9956c' : 'rgba(255,255,255,0.2)'} strokeWidth="2"
+          stroke={active ? '#ffffff' : 'rgba(0,0,0,0.3)'} strokeWidth="3"
           animate={{ rotate: active ? 360 : 0 }} transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
           style={{ transformOrigin: '70px 80px' }} />
       ))}
@@ -73,9 +73,9 @@ function MaintenanceVisualization({ active }: { active: boolean }) {
       {/* Sensor readings */}
       {active && (
         <>
-          <motion.path d="M150 50 Q160 60 150 70 Q140 80 150 90" fill="none" stroke="#c9956c" strokeWidth="1.5"
+          <motion.path d="M150 50 Q160 60 150 70 Q140 80 150 90" fill="none" stroke="#ffffff" strokeWidth="2"
             initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.5, delay: 0.8 }} />
-          <motion.circle cx="158" cy="55" r="3" fill="#c9956c" initial={{ scale: 0 }} animate={{ scale: [0, 1, 0] }}
+          <motion.circle cx="158" cy="55" r="3" fill="#ffffff" initial={{ scale: 0 }} animate={{ scale: [0, 1, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, delay: 1 }} />
         </>
       )}
@@ -92,9 +92,9 @@ function HealthcareVisualization({ active }: { active: boolean }) {
   return (
     <svg viewBox="0 0 200 150" className="w-full h-full">
       {/* Heart rate line */}
-      <motion.path 
+      <motion.path
         d="M0 75 L30 75 L40 75 L50 50 L60 100 L70 75 L80 75 L90 75 L100 75 L110 50 L120 100 L130 75 L140 75 L200 75"
-        fill="none" stroke={active ? '#c9956c' : 'rgba(255,255,255,0.2)'} strokeWidth="2"
+        fill="none" stroke={active ? '#ffffff' : 'rgba(0,0,0,0.3)'} strokeWidth="3"
         initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.5 }} />
       
       {/* Data points */}
@@ -105,7 +105,7 @@ function HealthcareVisualization({ active }: { active: boolean }) {
       
       {/* AI analysis box */}
       <motion.rect x="140" y="20" width="50" height="40" rx="4" fill="none"
-        stroke={active ? '#c9956c' : 'rgba(255,255,255,0.2)'} strokeWidth="1.5"
+        stroke={active ? '#ffffff' : 'rgba(0,0,0,0.3)'} strokeWidth="2.5"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} />
       <motion.text x="165" y="35" fill={active ? '#c9956c' : 'rgba(255,255,255,0.3)'} fontSize="8" textAnchor="middle"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}>AI</motion.text>
@@ -120,8 +120,8 @@ function HealthcareVisualization({ active }: { active: boolean }) {
       
       {/* Bottom stats */}
       {[20, 60, 100, 140].map((x, i) => (
-        <motion.rect key={i} x={x} y={120} width="30" height="20" rx="3" fill={active && i < 3 ? 'rgba(201,149,108,0.2)' : 'rgba(255,255,255,0.05)'}
-          stroke={active ? 'rgba(201,149,108,0.3)' : 'rgba(255,255,255,0.1)'} strokeWidth="1"
+        <motion.rect key={i} x={x} y={120} width="30" height="20" rx="3" fill={active && i < 3 ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.1)'}
+          stroke={active ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.2)'} strokeWidth="2"
           initial={{ opacity: 0, y: 130 }} animate={{ opacity: 1, y: 120 }} transition={{ delay: 0.3 + i * 0.1 }} />
       ))}
     </svg>
@@ -132,14 +132,14 @@ function EcommerceVisualization({ active }: { active: boolean }) {
   return (
     <svg viewBox="0 0 200 150" className="w-full h-full">
       {/* Chat bubbles */}
-      <motion.rect x="10" y="20" width="70" height="35" rx="8" fill={active ? 'rgba(201,149,108,0.15)' : 'rgba(255,255,255,0.05)'}
-        stroke={active ? '#c9956c' : 'rgba(255,255,255,0.2)'} strokeWidth="1.5"
+      <motion.rect x="10" y="20" width="70" height="35" rx="8" fill={active ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.1)'}
+        stroke={active ? '#ffffff' : 'rgba(0,0,0,0.3)'} strokeWidth="2.5"
         initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.3 }} />
-      <motion.rect x="120" y="60" width="70" height="35" rx="8" fill={active ? 'rgba(201,149,108,0.15)' : 'rgba(255,255,255,0.05)'}
-        stroke={active ? '#c9956c' : 'rgba(255,255,255,0.2)'} strokeWidth="1.5"
+      <motion.rect x="120" y="60" width="70" height="35" rx="8" fill={active ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.1)'}
+        stroke={active ? '#ffffff' : 'rgba(0,0,0,0.3)'} strokeWidth="2.5"
         initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.3, delay: 0.3 }} />
-      <motion.rect x="10" y="100" width="70" height="35" rx="8" fill={active ? 'rgba(201,149,108,0.15)' : 'rgba(255,255,255,0.05)'}
-        stroke={active ? '#c9956c' : 'rgba(255,255,255,0.2)'} strokeWidth="1.5"
+      <motion.rect x="10" y="100" width="70" height="35" rx="8" fill={active ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.1)'}
+        stroke={active ? '#ffffff' : 'rgba(0,0,0,0.3)'} strokeWidth="2.5"
         initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.3, delay: 0.6 }} />
       
       {/* Text lines */}
@@ -153,8 +153,8 @@ function EcommerceVisualization({ active }: { active: boolean }) {
       ))}
       
       {/* AI brain */}
-      <motion.circle cx="100" cy="75" r="20" fill={active ? 'rgba(201,149,108,0.2)' : 'rgba(255,255,255,0.05)'}
-        stroke={active ? '#c9956c' : 'rgba(255,255,255,0.2)'} strokeWidth="1.5"
+      <motion.circle cx="100" cy="75" r="20" fill={active ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.1)'}
+        stroke={active ? '#ffffff' : 'rgba(0,0,0,0.3)'} strokeWidth="2.5"
         initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5 }} />
       <motion.text x="100" y="79" fill={active ? '#c9956c' : 'rgba(255,255,255,0.4)'} fontSize="10" textAnchor="middle"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>AI</motion.text>
@@ -223,7 +223,7 @@ export function SectionWork() {
   const Visualization = activeProject.visualization
 
   return (
-    <section id="work" className="relative min-h-screen py-20 bg-[#f9a86c]">
+    <section id="work" className="relative min-h-screen py-20 bg-[#d97839]">
       <div className="px-6 md:px-12 lg:px-20 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-12">

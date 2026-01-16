@@ -103,7 +103,7 @@ export default function Home() {
       </AnimatePresence>
 
       {/* Fixed 3D Canvas */}
-      <div className="fixed inset-0 z-0">
+      <div className="fixed inset-0 z-[5] pointer-events-none">
         <Scene />
       </div>
 
@@ -152,7 +152,7 @@ export default function Home() {
       </motion.nav>
 
       {/* Content sections */}
-      <main className="relative z-10">
+      <main className="relative z-[1]">
         <SectionHero />
         <SectionProblem />
         <SectionApproach />
