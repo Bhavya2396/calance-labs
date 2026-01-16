@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { useStore } from '@/store/useStore'
 
 // ========================================
-// FLOWING 3D PRESENCE - RESPONSIVE & ENHANCED
+// FLOWING 3D PRESENCE - RESPONSIVE & DIMMED FOR MOBILE
 // ========================================
 
 const PARTICLE_COUNT = 2500
@@ -25,12 +25,15 @@ export function Emergence() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const { viewport, size } = useThree()
   
-  // Detect mobile based on actual pixel width (size.width is in pixels)
+  // Detect mobile based on actual pixel width
   const isMobile = size.width < 768
   const isTablet = size.width >= 768 && size.width < 1024
   
-  // Responsive scale multiplier - smaller on mobile
-  const responsiveScale = isMobile ? 0.4 : isTablet ? 0.6 : 1
+  // Responsive scale: bigger on mobile now, but dimmer
+  const responsiveScale = isMobile ? 0.85 : isTablet ? 0.7 : 1
+  
+  // Mobile dimming factor for opacity
+  const mobileDimFactor = isMobile ? 0.4 : 1
   
   const handlePointerMove = useCallback((e: THREE.Event) => {
     const event = e as unknown as { clientX: number; clientY: number }
@@ -66,21 +69,53 @@ export function Emergence() {
     return { positions: pos, velocities: vel, sizes: siz }
   }, [])
   
-  // Section-based parameters - RESPONSIVE for mobile
+  // Section-based parameters - BIGGER but DIMMER on mobile
   const getSectionParams = useCallback((section: string) => {
-    // Mobile: position at top-right corner, very small
-    // Desktop: full positioning
-    
     if (isMobile) {
-      // On mobile, always position in a corner and keep tiny
+      // Mobile: bigger size but positioned to avoid text, with smooth scroll response
       const mobileParams = {
-        hero: { x: viewport.width * 0.3, y: viewport.height * 0.3, scale: 0.5 },
-        problem: { x: -viewport.width * 0.3, y: viewport.height * 0.3, scale: 0.4 },
-        approach: { x: viewport.width * 0.3, y: viewport.height * 0.35, scale: 0.4 },
-        blueprint: { x: viewport.width * 0.35, y: viewport.height * 0.35, scale: 0.3 },
-        sandbox: { x: -viewport.width * 0.4, y: viewport.height * 0.4, scale: 0.25 },
-        work: { x: viewport.width * 0.4, y: viewport.height * 0.4, scale: 0.25 },
-        contact: { x: 0, y: viewport.height * 0.35, scale: 0.5 },
+        hero: { 
+          x: viewport.width * 0.32, 
+          y: viewport.height * 0.25, 
+          scale: 0.9,
+          brightness: 0.5,
+        },
+        problem: { 
+          x: -viewport.width * 0.32, 
+          y: viewport.height * 0.28, 
+          scale: 0.85,
+          brightness: 0.45,
+        },
+        approach: { 
+          x: viewport.width * 0.3, 
+          y: viewport.height * 0.3, 
+          scale: 0.8,
+          brightness: 0.5,
+        },
+        blueprint: { 
+          x: viewport.width * 0.35, 
+          y: -viewport.height * 0.15, 
+          scale: 0.75,
+          brightness: 0.45,
+        },
+        sandbox: { 
+          x: -viewport.width * 0.38, 
+          y: viewport.height * 0.32, 
+          scale: 0.7,
+          brightness: 0.4,
+        },
+        work: { 
+          x: viewport.width * 0.38, 
+          y: viewport.height * 0.3, 
+          scale: 0.7,
+          brightness: 0.4,
+        },
+        contact: { 
+          x: 0, 
+          y: viewport.height * 0.35, 
+          scale: 1,
+          brightness: 0.5,
+        },
       }
       
       const params = mobileParams[section as keyof typeof mobileParams] || mobileParams.hero
@@ -89,10 +124,10 @@ export function Emergence() {
         x: params.x,
         y: params.y,
         scale: params.scale * responsiveScale,
-        spread: 0.8,
+        spread: 0.9,
         speed: 0.8,
         color: '#f9a86c',
-        brightness: 1.0,
+        brightness: params.brightness,
       }
     }
     
@@ -197,10 +232,11 @@ export function Emergence() {
     const time = state.clock.elapsedTime
     const params = getSectionParams(currentSection)
     
-    // Smooth transitions
-    currentX.current = THREE.MathUtils.lerp(currentX.current, params.x, 0.03)
-    currentY.current = THREE.MathUtils.lerp(currentY.current, params.y, 0.03)
-    currentScale.current = THREE.MathUtils.lerp(currentScale.current, params.scale, 0.03)
+    // Smooth transitions - faster on mobile for better scroll responsiveness
+    const lerpSpeed = isMobile ? 0.05 : 0.03
+    currentX.current = THREE.MathUtils.lerp(currentX.current, params.x, lerpSpeed)
+    currentY.current = THREE.MathUtils.lerp(currentY.current, params.y, lerpSpeed)
+    currentScale.current = THREE.MathUtils.lerp(currentScale.current, params.scale, lerpSpeed)
     currentSpread.current = THREE.MathUtils.lerp(currentSpread.current, params.spread, 0.02)
     currentSpeed.current = THREE.MathUtils.lerp(currentSpeed.current, params.speed, 0.02)
     currentColor.current.lerp(new THREE.Color(params.color), 0.02)
@@ -270,10 +306,11 @@ export function Emergence() {
       const material = pointsRef.current.material as THREE.PointsMaterial
       material.color.copy(currentColor.current)
       material.size = (isMobile ? 0.012 : 0.015) * currentBrightness.current + pulseIntensity.current * 0.01
-      material.opacity = 0.7 * currentBrightness.current + pulseIntensity.current * 0.2
+      // Apply mobile dimming to opacity
+      material.opacity = (0.7 * currentBrightness.current + pulseIntensity.current * 0.2) * mobileDimFactor
     }
     
-    // Update core with enhanced glow
+    // Update core with enhanced glow - dimmed on mobile
     if (coreRef.current) {
       const coreScale = 0.3 + pulseIntensity.current * 0.2 + Math.sin(time * 2) * 0.05
       coreRef.current.scale.setScalar(coreScale)
@@ -282,14 +319,17 @@ export function Emergence() {
       coreRef.current.rotation.z = time * 0.08
       
       const coreMat = coreRef.current.material as THREE.MeshStandardMaterial
-      coreMat.emissiveIntensity = 0.4 * currentBrightness.current + pulseIntensity.current * 0.4 + (isGenerating ? Math.sin(time * 8) * 0.2 : 0) + Math.sin(time * 3) * 0.1
+      const coreEmissive = (0.4 * currentBrightness.current + pulseIntensity.current * 0.4 + (isGenerating ? Math.sin(time * 8) * 0.2 : 0) + Math.sin(time * 3) * 0.1) * mobileDimFactor
+      coreMat.emissiveIntensity = coreEmissive
       coreMat.color.copy(currentColor.current)
       coreMat.emissive.copy(currentColor.current)
       coreMat.metalness = 0.95
       coreMat.roughness = 0.05
+      // Apply mobile dimming to core opacity
+      coreMat.opacity = 0.7 * mobileDimFactor
     }
     
-    // Update rings with wave motion
+    // Update rings with wave motion - dimmed on mobile
     ringRefs.current.forEach((ring, i) => {
       if (ring) {
         const ringScale = 0.5 * (1 + i * 0.4) + pulseIntensity.current * 0.12 + Math.sin(time * 1.5 + i) * 0.05
@@ -300,7 +340,8 @@ export function Emergence() {
         
         const ringMat = ring.material as THREE.MeshBasicMaterial
         ringMat.color.copy(currentColor.current)
-        ringMat.opacity = (0.15 - i * 0.03) * currentBrightness.current + pulseIntensity.current * 0.08
+        // Apply mobile dimming to ring opacity
+        ringMat.opacity = ((0.15 - i * 0.03) * currentBrightness.current + pulseIntensity.current * 0.08) * mobileDimFactor
       }
     })
   })
