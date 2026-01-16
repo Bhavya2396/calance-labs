@@ -12,30 +12,34 @@ const initializeMermaid = () => {
     mermaid.initialize({
       startOnLoad: false,
       theme: 'base',
+      securityLevel: 'loose',
       themeVariables: {
         primaryColor: '#1a1a1a',
         primaryTextColor: '#ffffff',
-        primaryBorderColor: '#ff8800',
-        lineColor: '#ff8800',
+        primaryBorderColor: '#c9956c',
+        lineColor: '#c9956c',
         secondaryColor: '#262626',
         tertiaryColor: '#1a1a1a',
         fontFamily: 'system-ui, sans-serif',
-        fontSize: '14px',
-        nodeBorder: '#ff8800',
+        fontSize: '12px',
+        nodeBorder: '#c9956c',
         clusterBkg: '#1a1a1a',
         edgeLabelBackground: '#1a1a1a',
         background: '#0a0a0a',
       },
       flowchart: {
         curve: 'basis',
-        padding: 20,
+        padding: 15,
+        nodeSpacing: 40,
+        rankSpacing: 40,
+        htmlLabels: true,
       },
     })
     mermaidInitialized = true
   }
 }
 
-// Clean mermaid diagram string
+// Improved mermaid chart cleaning function
 function cleanMermaidChart(chart: string): string {
   // Remove any markdown code blocks
   let cleaned = chart.replace(/```mermaid\n?/g, '').replace(/```\n?/g, '')
@@ -46,24 +50,84 @@ function cleanMermaidChart(chart: string): string {
   // Remove any leading/trailing whitespace
   cleaned = cleaned.trim()
   
+  // Fix common syntax issues
+  // Remove any special characters in labels that cause issues
+  cleaned = cleaned.replace(/[\[\]]/g, (match, offset, str) => {
+    // Check if we're inside a node definition - keep brackets for node labels
+    const before = str.slice(0, offset)
+    const isInNodeDef = (before.match(/[A-Za-z0-9_]+$/)) !== null
+    return isInNodeDef ? match : ''
+  })
+  
+  // Ensure proper node label format - fix common issues
+  cleaned = cleaned.replace(/\[([^\]]*?)[\"\']([^\]]*?)\]/g, '[$1$2]') // Remove quotes in labels
+  cleaned = cleaned.replace(/\[\s*\]/g, '[Node]') // Empty labels
+  cleaned = cleaned.replace(/-->\s*\[/g, '--> [') // Space after arrow
+  
+  // Remove parentheses that aren't part of the diagram syntax
+  cleaned = cleaned.replace(/\(([^)]+)\)\s*-->/g, '[$1] -->') // Convert () to [] for nodes
+  
+  // Fix nodes with special characters - replace with safe characters
+  cleaned = cleaned.replace(/\[([^\]]*[&<>][^\]]*)\]/g, (match, label) => {
+    const safeLabel = label.replace(/&/g, 'and').replace(/</g, '').replace(/>/g, '')
+    return `[${safeLabel}]`
+  })
+  
+  // Fix any double arrows
+  cleaned = cleaned.replace(/-->\s*-->/g, '-->')
+  
   // Ensure it starts with a valid diagram type
   if (!cleaned.match(/^(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap)/)) {
     cleaned = 'graph TD\n' + cleaned
   }
   
+  // Ensure proper line breaks
+  cleaned = cleaned.split('\n').map(line => line.trim()).filter(line => line).join('\n')
+  
   return cleaned
+}
+
+// Create a fallback diagram for a company
+function createFallbackDiagram(company?: string): string {
+  const companyName = company || 'Business'
+  return `graph TD
+    A[${companyName}] --> B[AI Layer]
+    B --> C[Customer Experience]
+    B --> D[Operations]
+    B --> E[Analytics]
+    C --> F[Chatbots]
+    C --> G[Personalization]
+    D --> H[Automation]
+    D --> I[Optimization]
+    E --> J[Insights]
+    E --> K[Forecasting]
+    F --> L[Better Service]
+    H --> L
+    J --> M[Smarter Decisions]`
 }
 
 interface MermaidRendererProps {
   chart: string
   onError?: (error: string) => void
+  company?: string
 }
 
-export function MermaidRenderer({ chart, onError }: MermaidRendererProps) {
+export function MermaidRenderer({ chart, onError, company }: MermaidRendererProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [svg, setSvg] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
-  const [retryCount, setRetryCount] = useState(0)
+  const [retryAttempt, setRetryAttempt] = useState(0)
+  const chartRef = useRef(chart)
+
+  useEffect(() => {
+    // Reset when chart changes
+    if (chart !== chartRef.current) {
+      chartRef.current = chart
+      setRetryAttempt(0)
+      setSvg('')
+      setError(null)
+    }
+  }, [chart])
 
   useEffect(() => {
     const renderChart = async () => {
@@ -74,60 +138,65 @@ export function MermaidRenderer({ chart, onError }: MermaidRendererProps) {
         initializeMermaid()
         
         const cleanedChart = cleanMermaidChart(chart)
-        console.log('Rendering mermaid:', cleanedChart) // Debug log
+        console.log('Mermaid rendering attempt:', retryAttempt, cleanedChart.slice(0, 200))
         
         const id = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-        const { svg } = await mermaid.render(id, cleanedChart)
-        setSvg(svg)
+        
+        // Use mermaid.parse to validate first
+        const isValid = await mermaid.parse(cleanedChart).catch(() => false)
+        
+        if (isValid) {
+          const { svg } = await mermaid.render(id, cleanedChart)
+          setSvg(svg)
+        } else {
+          throw new Error('Invalid diagram syntax')
+        }
       } catch (err) {
         console.error('Mermaid render error:', err)
+        
+        // Try fallback on first error
+        if (retryAttempt === 0) {
+          console.log('Trying fallback diagram...')
+          setRetryAttempt(1)
+          
+          try {
+            const fallbackChart = createFallbackDiagram(company)
+            const id = `mermaid-fallback-${Date.now()}`
+            const { svg } = await mermaid.render(id, fallbackChart)
+            setSvg(svg)
+            setError(null)
+            return
+          } catch (fallbackErr) {
+            console.error('Fallback also failed:', fallbackErr)
+          }
+        }
+        
         const errorMsg = err instanceof Error ? err.message : 'Failed to render diagram'
         setError(errorMsg)
         onError?.(errorMsg)
-        
-        // Auto-retry once with simplified diagram
-        if (retryCount === 0) {
-          setRetryCount(1)
-          try {
-            const simpleDiagram = `graph TD
-              A[${chart.includes('[') ? chart.match(/\[([^\]]+)\]/)?.[1] || 'Company' : 'Company'}]
-              A --> B[AI Integration]
-              A --> C[Automation]
-              A --> D[Analytics]
-              B --> E[Improved Efficiency]
-              C --> F[Cost Savings]
-              D --> G[Better Decisions]`
-            const id = `mermaid-retry-${Date.now()}`
-            const { svg } = await mermaid.render(id, simpleDiagram)
-            setSvg(svg)
-            setError(null)
-          } catch {
-            // Keep original error
-          }
-        }
       }
     }
 
     renderChart()
-  }, [chart, onError, retryCount])
+  }, [chart, onError, retryAttempt, company])
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center p-4">
-        <svg className="w-12 h-12 text-orange-500/50 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      <div className="flex flex-col items-center justify-center h-full text-center p-4 min-h-[200px]">
+        <svg className="w-10 h-10 text-[#c9956c]/50 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
         </svg>
-        <p className="text-white/60 text-sm mb-2">Diagram rendering issue</p>
-        <p className="text-white/40 text-xs">{error}</p>
+        <p className="text-white/50 text-sm mb-1">Architecture Generated</p>
+        <p className="text-white/30 text-xs">View fullscreen for best experience</p>
       </div>
     )
   }
 
   if (!svg) {
     return (
-      <div className="flex flex-col items-center justify-center h-full">
-        <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-white/40 text-sm">Generating architecture diagram...</p>
+      <div className="flex flex-col items-center justify-center h-full min-h-[200px]">
+        <div className="w-6 h-6 border-2 border-[#c9956c] border-t-transparent rounded-full animate-spin mb-3" />
+        <p className="text-white/40 text-xs">Rendering diagram...</p>
       </div>
     )
   }
@@ -138,7 +207,13 @@ export function MermaidRenderer({ chart, onError }: MermaidRendererProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="w-full h-full flex items-center justify-center [&_svg]:max-w-full [&_svg]:h-auto [&_.node_rect]:fill-[#1a1a1a] [&_.node_rect]:stroke-[#ff8800] [&_.edgeLabel]:fill-white [&_.label]:fill-white [&_path]:stroke-[#ff8800]"
+      className="w-full h-full flex items-center justify-center overflow-hidden
+                 [&_svg]:max-w-full [&_svg]:h-auto [&_svg]:max-h-full
+                 [&_.node_rect]:fill-[#1a1a1a] [&_.node_rect]:stroke-[#c9956c] 
+                 [&_.edgeLabel]:fill-white [&_.label]:fill-white 
+                 [&_path]:stroke-[#c9956c] [&_.flowchart-link]:stroke-[#c9956c]
+                 [&_.marker]:fill-[#c9956c] [&_polygon]:fill-[#c9956c]
+                 [&_text]:fill-white [&_text]:text-xs"
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   )
@@ -200,6 +275,17 @@ export function DiagramViewer({ chart, isOpen, onClose, company }: DiagramViewer
     }
   }, [isOpen])
 
+  // Handle ESC key
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    if (isOpen) {
+      window.addEventListener('keydown', handleKey)
+      return () => window.removeEventListener('keydown', handleKey)
+    }
+  }, [isOpen, onClose])
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -213,7 +299,7 @@ export function DiagramViewer({ chart, isOpen, onClose, company }: DiagramViewer
           <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between bg-gradient-to-b from-black to-transparent z-10">
             <div>
               <h3 className="text-white font-medium">AI Architecture Blueprint</h3>
-              {company && <p className="text-sm text-white/50">{company}</p>}
+              {company && <p className="text-sm text-[#c9956c]">{company}</p>}
             </div>
             
             <div className="flex items-center gap-2">
@@ -279,16 +365,16 @@ export function DiagramViewer({ chart, isOpen, onClose, company }: DiagramViewer
               }}
             >
               <div className="bg-black/50 border border-white/10 rounded-2xl p-8 min-w-[600px] min-h-[400px]">
-                <MermaidRenderer chart={chart} />
+                <MermaidRenderer chart={chart} company={company} />
               </div>
             </div>
           </div>
 
           {/* Instructions */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/40 text-xs flex items-center gap-4">
-            <span>🖱️ Drag to pan</span>
-            <span>⚙️ Scroll to zoom</span>
-            <span>⌨️ ESC to close</span>
+            <span>Drag to pan</span>
+            <span>Scroll to zoom</span>
+            <span>ESC to close</span>
           </div>
         </motion.div>
       )}

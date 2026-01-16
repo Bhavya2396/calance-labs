@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { useStore } from '@/store/useStore'
 
 // ========================================
-// FLOWING 3D PRESENCE - BRIGHTER & ENHANCED
+// FLOWING 3D PRESENCE - RESPONSIVE & ENHANCED
 // ========================================
 
 const PARTICLE_COUNT = 2500
@@ -23,7 +23,14 @@ export function Emergence() {
   const pulseEffect = useStore((state) => state.pulseEffect)
   
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
-  const { viewport } = useThree()
+  const { viewport, size } = useThree()
+  
+  // Detect mobile based on actual pixel width (size.width is in pixels)
+  const isMobile = size.width < 768
+  const isTablet = size.width >= 768 && size.width < 1024
+  
+  // Responsive scale multiplier - smaller on mobile
+  const responsiveScale = isMobile ? 0.4 : isTablet ? 0.6 : 1
   
   const handlePointerMove = useCallback((e: THREE.Event) => {
     const event = e as unknown as { clientX: number; clientY: number }
@@ -59,14 +66,45 @@ export function Emergence() {
     return { positions: pos, velocities: vel, sizes: siz }
   }, [])
   
-  // Section-based parameters - MOVE FAR AWAY from sandbox and work
+  // Section-based parameters - RESPONSIVE for mobile
   const getSectionParams = useCallback((section: string) => {
+    // Mobile: position at top-right corner, very small
+    // Desktop: full positioning
+    
+    if (isMobile) {
+      // On mobile, always position in a corner and keep tiny
+      const mobileParams = {
+        hero: { x: viewport.width * 0.3, y: viewport.height * 0.3, scale: 0.5 },
+        problem: { x: -viewport.width * 0.3, y: viewport.height * 0.3, scale: 0.4 },
+        approach: { x: viewport.width * 0.3, y: viewport.height * 0.35, scale: 0.4 },
+        blueprint: { x: viewport.width * 0.35, y: viewport.height * 0.35, scale: 0.3 },
+        sandbox: { x: -viewport.width * 0.4, y: viewport.height * 0.4, scale: 0.25 },
+        work: { x: viewport.width * 0.4, y: viewport.height * 0.4, scale: 0.25 },
+        contact: { x: 0, y: viewport.height * 0.35, scale: 0.5 },
+      }
+      
+      const params = mobileParams[section as keyof typeof mobileParams] || mobileParams.hero
+      
+      return {
+        x: params.x,
+        y: params.y,
+        scale: params.scale * responsiveScale,
+        spread: 0.8,
+        speed: 0.8,
+        color: '#f9a86c',
+        brightness: 1.0,
+      }
+    }
+    
+    // Tablet adjustments
+    const tabletMultiplier = isTablet ? 0.85 : 1
+    
     switch (section) {
       case 'hero':
         return { 
-          x: viewport.width * 0.28, 
+          x: viewport.width * 0.28 * tabletMultiplier, 
           y: 0,
-          scale: 1.2,
+          scale: 1.2 * responsiveScale,
           spread: 1,
           speed: 1,
           color: '#f9a86c',
@@ -74,9 +112,9 @@ export function Emergence() {
         }
       case 'problem':
         return { 
-          x: -viewport.width * 0.28,
+          x: -viewport.width * 0.28 * tabletMultiplier,
           y: 0,
-          scale: 1,
+          scale: 1 * responsiveScale,
           spread: 1.3,
           speed: 0.6,
           color: '#9a9a9a',
@@ -84,9 +122,9 @@ export function Emergence() {
         }
       case 'approach':
         return { 
-          x: viewport.width * 0.28,
+          x: viewport.width * 0.28 * tabletMultiplier,
           y: 0,
-          scale: 0.9,
+          scale: 0.9 * responsiveScale,
           spread: 0.8,
           speed: 0.8,
           color: '#d4a574',
@@ -94,9 +132,9 @@ export function Emergence() {
         }
       case 'blueprint':
         return { 
-          x: viewport.width * 0.42, // Far right
+          x: viewport.width * 0.42 * tabletMultiplier,
           y: -viewport.height * 0.12,
-          scale: 0.7,
+          scale: 0.7 * responsiveScale,
           spread: 0.6,
           speed: 1.5,
           color: '#ffc085',
@@ -104,9 +142,9 @@ export function Emergence() {
         }
       case 'sandbox':
         return { 
-          x: -viewport.width * 0.45, // Far left - away from content
-          y: viewport.height * 0.15, // Move up
-          scale: 0.6, // Smaller
+          x: -viewport.width * 0.45 * tabletMultiplier,
+          y: viewport.height * 0.2,
+          scale: 0.5 * responsiveScale,
           spread: 0.7,
           speed: 1.2,
           color: '#f9a86c',
@@ -114,9 +152,9 @@ export function Emergence() {
         }
       case 'work':
         return { 
-          x: viewport.width * 0.45, // Far right - away from content
-          y: viewport.height * 0.1, // Move up
-          scale: 0.6, // Smaller
+          x: viewport.width * 0.45 * tabletMultiplier,
+          y: viewport.height * 0.15,
+          scale: 0.5 * responsiveScale,
           spread: 0.8,
           speed: 0.9,
           color: '#d8b090',
@@ -126,7 +164,7 @@ export function Emergence() {
         return { 
           x: 0,
           y: viewport.height * 0.25,
-          scale: 1.4,
+          scale: 1.4 * responsiveScale,
           spread: 0.5,
           speed: 0.5,
           color: '#ffc085',
@@ -136,14 +174,14 @@ export function Emergence() {
         return { 
           x: viewport.width * 0.2,
           y: 0,
-          scale: 1,
+          scale: 1 * responsiveScale,
           spread: 1,
           speed: 1,
           color: '#f9a86c',
           brightness: 1.2,
         }
     }
-  }, [viewport])
+  }, [viewport, isMobile, isTablet, responsiveScale])
   
   // Smooth transition refs
   const currentX = useRef(0)
@@ -205,8 +243,8 @@ export function Emergence() {
         const pulse = Math.sin(time * 5 + i * 0.01) * pulseIntensity.current * 0.3
         const wave = Math.sin(time * 0.8 + phi * 3) * 0.08
         
-        // Stronger mouse influence
-        const mouseInfluence = 0.25
+        // Mouse influence (reduced on mobile for performance)
+        const mouseInfluence = isMobile ? 0.1 : 0.25
         const dx = mousePos.x * mouseInfluence
         const dy = mousePos.y * mouseInfluence
         
@@ -231,7 +269,7 @@ export function Emergence() {
       
       const material = pointsRef.current.material as THREE.PointsMaterial
       material.color.copy(currentColor.current)
-      material.size = 0.015 * currentBrightness.current + pulseIntensity.current * 0.01
+      material.size = (isMobile ? 0.012 : 0.015) * currentBrightness.current + pulseIntensity.current * 0.01
       material.opacity = 0.7 * currentBrightness.current + pulseIntensity.current * 0.2
     }
     

@@ -95,7 +95,7 @@ function InlineDiagram({ chart, company }: { chart: string; company: string }) {
               transition: isDragging ? 'none' : 'transform 0.1s ease-out',
             }}
           >
-            <MermaidRenderer chart={chart} />
+            <MermaidRenderer chart={chart} company={company} />
           </div>
         </div>
         <p className="text-white/20 text-xs mt-2 text-center">Drag to pan • Scroll to zoom • Click expand for fullscreen</p>
@@ -126,7 +126,7 @@ function InlineDiagram({ chart, company }: { chart: string; company: string }) {
             </div>
             <div className="flex-1 p-8 flex items-center justify-center">
               <div className="max-w-4xl w-full">
-                <MermaidRenderer chart={chart} />
+                <MermaidRenderer chart={chart} company={company} />
               </div>
             </div>
           </motion.div>

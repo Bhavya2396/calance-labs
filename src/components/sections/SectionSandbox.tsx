@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStore } from '@/store/useStore'
 import { 
@@ -88,37 +88,195 @@ const CAPABILITIES = [
   { id: 'analytics', title: 'Analytics', icon: AnalyticsIcon, desc: 'Predictive insights' },
 ]
 
-// Get context-aware prompts based on company data
-function getPrompts(capability: string, company?: string, industry?: string) {
+// Get context-aware prompts based on company data and solutions
+function getPrompts(capability: string, company?: string, industry?: string, solutions?: { name: string; type: string }[]) {
   const c = company || 'your company'
-  const prompts: Record<string, string[]> = {
+  const ind = industry || 'business'
+  
+  // Find relevant solutions for each capability
+  const hasNLP = solutions?.some(s => s.type === 'nlp')
+  const hasVision = solutions?.some(s => s.type === 'vision')
+  const hasAnalytics = solutions?.some(s => s.type === 'analytics')
+  const hasAgentic = solutions?.some(s => s.type === 'agentic')
+  
+  // Industry-specific prompt templates
+  const industryPrompts: Record<string, Record<string, string[]>> = {
+    retail: {
+      chat: [
+        `How can AI chatbots handle product inquiries for ${c}?`,
+        `What customer support automation would benefit ${c}?`,
+        `Design an AI assistant for ${c}'s online shopping experience`,
+      ],
+      agents: [
+        `Automate order processing and inventory updates for ${c}`,
+        `Create a workflow to handle customer returns at ${c}`,
+        `Build an agent to manage ${c}'s supplier communications`,
+      ],
+      vision: [
+        `Analyze product images for quality control at ${c}`,
+        `Detect shelf inventory levels in ${c}'s stores`,
+        `Inspect returned items for damage assessment`,
+      ],
+      documents: [
+        `Extract data from ${c}'s purchase orders`,
+        `Process supplier invoices for ${c}`,
+        `Parse customer feedback forms from ${c}`,
+      ],
+      analytics: [
+        `Analyze ${c}'s sales trends and forecast demand`,
+        `Identify customer churn risk factors for ${c}`,
+        `Optimize ${c}'s pricing based on market data`,
+      ],
+    },
+    healthcare: {
+      chat: [
+        `How can ${c} use AI for patient appointment scheduling?`,
+        `Design a symptom triage chatbot for ${c}`,
+        `What AI support would benefit ${c}'s patients?`,
+      ],
+      agents: [
+        `Automate insurance verification workflow for ${c}`,
+        `Create a patient follow-up automation for ${c}`,
+        `Build an agent to handle ${c}'s prescription refills`,
+      ],
+      vision: [
+        `Analyze medical equipment status at ${c}`,
+        `Verify prescription labels for ${c}'s pharmacy`,
+        `Check medication packaging integrity`,
+      ],
+      documents: [
+        `Extract patient data from ${c}'s intake forms`,
+        `Process insurance claims for ${c}`,
+        `Parse lab results for ${c}'s EHR system`,
+      ],
+      analytics: [
+        `Analyze ${c}'s patient wait times and optimize scheduling`,
+        `Predict no-show appointments at ${c}`,
+        `Identify resource utilization patterns for ${c}`,
+      ],
+    },
+    finance: {
+      chat: [
+        `How can ${c} automate customer account inquiries?`,
+        `Design an AI advisor for ${c}'s investment services`,
+        `What loan-related questions should ${c}'s AI handle?`,
+      ],
+      agents: [
+        `Automate loan application processing for ${c}`,
+        `Create a compliance checking workflow for ${c}`,
+        `Build an agent to handle ${c}'s KYC verification`,
+      ],
+      vision: [
+        `Verify check authenticity for ${c}`,
+        `Analyze ID documents for ${c}'s onboarding`,
+        `Detect document tampering in submissions`,
+      ],
+      documents: [
+        `Extract data from loan applications for ${c}`,
+        `Process bank statements for ${c}'s credit analysis`,
+        `Parse financial reports for ${c}'s due diligence`,
+      ],
+      analytics: [
+        `Detect fraudulent patterns in ${c}'s transactions`,
+        `Analyze ${c}'s loan portfolio risk`,
+        `Forecast ${c}'s cash flow trends`,
+      ],
+    },
+    manufacturing: {
+      chat: [
+        `How can ${c} use AI for equipment troubleshooting?`,
+        `Design a shop floor assistant for ${c}'s workers`,
+        `What maintenance queries should ${c}'s AI handle?`,
+      ],
+      agents: [
+        `Automate production scheduling for ${c}`,
+        `Create a quality control workflow for ${c}`,
+        `Build an agent to manage ${c}'s maintenance tickets`,
+      ],
+      vision: [
+        `Inspect products for manufacturing defects at ${c}`,
+        `Analyze assembly line quality at ${c}`,
+        `Detect equipment anomalies on ${c}'s production floor`,
+      ],
+      documents: [
+        `Extract data from ${c}'s work orders`,
+        `Process quality inspection reports for ${c}`,
+        `Parse equipment maintenance logs for ${c}`,
+      ],
+      analytics: [
+        `Predict equipment maintenance needs at ${c}`,
+        `Analyze ${c}'s production efficiency`,
+        `Optimize ${c}'s supply chain inventory`,
+      ],
+    },
+    technology: {
+      chat: [
+        `How can ${c} use AI for technical support?`,
+        `Design a developer assistant for ${c}'s team`,
+        `What product questions should ${c}'s AI handle?`,
+      ],
+      agents: [
+        `Automate ${c}'s deployment pipeline`,
+        `Create an incident response workflow for ${c}`,
+        `Build an agent to triage ${c}'s support tickets`,
+      ],
+      vision: [
+        `Analyze UI screenshots for bugs at ${c}`,
+        `Detect visual regressions in ${c}'s app`,
+        `Process user-submitted error screenshots`,
+      ],
+      documents: [
+        `Extract requirements from ${c}'s product specs`,
+        `Process API documentation for ${c}`,
+        `Parse customer integration requests for ${c}`,
+      ],
+      analytics: [
+        `Analyze ${c}'s user engagement metrics`,
+        `Predict customer churn for ${c}'s SaaS`,
+        `Optimize ${c}'s infrastructure costs`,
+      ],
+    },
+  }
+
+  // Get industry-specific prompts or fall back to generic
+  const industryKey = Object.keys(industryPrompts).find(k => ind.toLowerCase().includes(k)) || 'technology'
+  const prompts = industryPrompts[industryKey]?.[capability]
+
+  // If we have company data, use industry-specific prompts
+  if (company && prompts) {
+    return prompts
+  }
+
+  // Generic prompts if no company data
+  const genericPrompts: Record<string, string[]> = {
     chat: [
-      `How can AI improve customer experience at ${c}?`,
-      `What are the top automation opportunities for ${c}?`,
-      `Explain how ${c} can benefit from predictive analytics`,
+      'How can AI improve customer experience?',
+      'What automation opportunities exist for my business?',
+      'Explain the benefits of conversational AI',
     ],
     agents: [
-      `Process a customer order and update inventory`,
-      `Analyze support tickets and route to teams`,
-      `Generate weekly performance report`,
+      'Process a customer order and update inventory',
+      'Analyze support tickets and route to teams',
+      'Generate a weekly performance report',
     ],
     vision: [
-      `Analyze product image for quality defects`,
-      `Detect objects and classify items`,
-      `Extract text from scanned documents`,
+      'Analyze product image for quality defects',
+      'Detect objects and classify items',
+      'Extract text from scanned documents',
     ],
     documents: [
-      `Extract key data from invoice`,
-      `Process and summarize contract`,
-      `Parse customer intake form`,
+      'Extract key data from this invoice',
+      'Process and summarize this contract',
+      'Parse customer intake form data',
     ],
     analytics: [
-      `Analyze sales trends and forecast next quarter`,
-      `Identify customer churn risk factors`,
-      `Optimize pricing based on demand patterns`,
+      'Analyze sales trends and forecast next quarter',
+      'Identify customer churn risk factors',
+      'Optimize pricing based on demand patterns',
     ],
   }
-  return prompts[capability] || prompts.chat
+
+  return genericPrompts[capability] || genericPrompts.chat
 }
 
 export function SectionSandbox() {
@@ -127,16 +285,35 @@ export function SectionSandbox() {
   const [input, setInput] = useState('')
   const [result, setResult] = useState<string | WorkflowStep[] | AnalyticsResult | VisionResult | DocumentResult | null>(null)
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   const companyData = useStore((state) => state.companyData)
+  const triggerPulse = useStore((state) => state.triggerPulse)
   const context = companyData ? { company: companyData.company, industry: companyData.industry } : undefined
-  const prompts = getPrompts(activeCapability, companyData?.company, companyData?.industry)
+  const prompts = getPrompts(
+    activeCapability, 
+    companyData?.company, 
+    companyData?.industry,
+    companyData?.solutions
+  )
+
+  // Pre-fill input when switching to a capability that matches a solution
+  useEffect(() => {
+    if (companyData && prompts.length > 0) {
+      // Auto-select the first prompt for context
+      setInput(prompts[0])
+    }
+  }, [activeCapability, companyData?.company]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleRun = async () => {
     if (!input.trim() && activeCapability !== 'vision') return
+    if (activeCapability === 'vision' && !uploadedImage) return
+    
     setIsRunning(true)
     setResult(null)
+    setError(null)
+    triggerPulse()
 
     try {
       switch (activeCapability) {
@@ -150,7 +327,9 @@ export function SectionSandbox() {
           break
         case 'vision':
           if (uploadedImage) {
-            const visionResult = await analyzeImage(uploadedImage.split(',')[1], 'image/jpeg', context)
+            const base64Data = uploadedImage.split(',')[1]
+            const mimeType = uploadedImage.split(';')[0].split(':')[1] || 'image/jpeg'
+            const visionResult = await analyzeImage(base64Data, mimeType, context)
             setResult(visionResult)
           }
           break
@@ -163,9 +342,10 @@ export function SectionSandbox() {
           setResult(analyticsResult)
           break
       }
-    } catch (error) {
-      console.error('Error:', error)
-      setResult('Demo completed successfully.')
+      triggerPulse()
+    } catch (err) {
+      console.error('Sandbox error:', err)
+      setError(err instanceof Error ? err.message : 'An error occurred. Please try again.')
     }
     setIsRunning(false)
   }
@@ -173,8 +353,16 @@ export function SectionSandbox() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Image too large. Please use an image under 5MB.')
+        return
+      }
       const reader = new FileReader()
-      reader.onload = (e) => setUploadedImage(e.target?.result as string)
+      reader.onload = (e) => {
+        setUploadedImage(e.target?.result as string)
+        setError(null)
+      }
+      reader.onerror = () => setError('Failed to read image file.')
       reader.readAsDataURL(file)
     }
   }
@@ -183,6 +371,7 @@ export function SectionSandbox() {
     setResult(null)
     setInput('')
     setUploadedImage(null)
+    setError(null)
   }
 
   return (
@@ -211,13 +400,33 @@ export function SectionSandbox() {
           </motion.h2>
 
           {companyData && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="flex items-center gap-3"
+            >
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <p className="text-[#c9956c] text-sm">
+                Customized for <span className="font-medium">{companyData.company}</span> • {companyData.industry}
+              </p>
+            </motion.div>
+          )}
+          
+          {!companyData && (
             <motion.p
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="text-[#c9956c] text-sm"
+              className="text-white/40 text-sm"
             >
-              Customized for {companyData.company} • {companyData.industry}
+              <button 
+                onClick={() => document.getElementById('blueprint')?.scrollIntoView({ behavior: 'smooth' })}
+                className="text-[#c9956c] hover:underline"
+              >
+                Generate a Blueprint
+              </button>
+              {' '}first to see customized prompts for your business
             </motion.p>
           )}
         </div>
@@ -228,6 +437,17 @@ export function SectionSandbox() {
             {CAPABILITIES.map((cap, i) => {
               const Icon = cap.icon
               const isActive = activeCapability === cap.id
+              
+              // Check if this capability matches a solution
+              const hasSolution = companyData?.solutions.some(s => {
+                if (cap.id === 'chat') return s.type === 'nlp'
+                if (cap.id === 'agents') return s.type === 'agentic' || s.type === 'automation'
+                if (cap.id === 'vision') return s.type === 'vision'
+                if (cap.id === 'documents') return s.type === 'nlp'
+                if (cap.id === 'analytics') return s.type === 'analytics'
+                return false
+              })
+              
               return (
                 <motion.button
                   key={cap.id}
@@ -242,15 +462,22 @@ export function SectionSandbox() {
                   className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${
                     isActive
                       ? 'bg-[#c9956c]/10 border-[#c9956c]/30'
-                      : 'bg-white/[0.02] border-white/5 hover:border-white/10'
+                      : hasSolution
+                        ? 'bg-white/[0.02] border-[#c9956c]/20 hover:border-[#c9956c]/30'
+                        : 'bg-white/[0.02] border-white/5 hover:border-white/10'
                   }`}
                 >
                   <div className={`w-10 h-10 ${isActive ? 'opacity-100' : 'opacity-50'}`}>
                     <Icon active={isActive} />
                   </div>
-                  <div className="text-left">
-                    <div className={`text-sm font-medium ${isActive ? 'text-white' : 'text-white/60'}`}>
+                  <div className="text-left flex-1">
+                    <div className={`text-sm font-medium flex items-center gap-2 ${isActive ? 'text-white' : 'text-white/60'}`}>
                       {cap.title}
+                      {hasSolution && !isActive && (
+                        <span className="text-[10px] text-[#c9956c] bg-[#c9956c]/10 px-1.5 py-0.5 rounded">
+                          Recommended
+                        </span>
+                      )}
                     </div>
                     <div className="text-white/30 text-xs">{cap.desc}</div>
                   </div>
@@ -274,14 +501,28 @@ export function SectionSandbox() {
                   <button
                     key={i}
                     onClick={() => setInput(prompt)}
-                    className="px-3 py-1.5 text-xs text-white/50 bg-white/[0.03] border border-white/5 rounded-full
-                               hover:border-[#c9956c]/30 hover:text-white/70 transition-colors"
+                    className={`px-3 py-1.5 text-xs border rounded-full transition-colors ${
+                      input === prompt 
+                        ? 'text-[#c9956c] bg-[#c9956c]/10 border-[#c9956c]/30' 
+                        : 'text-white/50 bg-white/[0.03] border-white/5 hover:border-[#c9956c]/30 hover:text-white/70'
+                    }`}
                   >
-                    {prompt.length > 40 ? prompt.slice(0, 40) + '...' : prompt}
+                    {prompt.length > 45 ? prompt.slice(0, 45) + '...' : prompt}
                   </button>
                 ))}
               </div>
             </div>
+
+            {/* Error display */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg"
+              >
+                <p className="text-red-400 text-sm">{error}</p>
+              </motion.div>
+            )}
 
             {/* Input area */}
             <div className="mb-6">
@@ -303,11 +544,22 @@ export function SectionSandbox() {
                       <img src={uploadedImage} alt="Uploaded" className="max-h-32 rounded-lg" />
                     ) : (
                       <>
-                        <VisionIcon active={false} />
+                        <div className="w-12 h-12 opacity-40">
+                          <VisionIcon active={false} />
+                        </div>
                         <span className="text-white/40 text-sm">Click to upload image</span>
+                        <span className="text-white/20 text-xs">PNG, JPG up to 5MB</span>
                       </>
                     )}
                   </button>
+                  {uploadedImage && (
+                    <button 
+                      onClick={() => setUploadedImage(null)}
+                      className="text-white/30 text-xs hover:text-white/50"
+                    >
+                      Remove image
+                    </button>
+                  )}
                 </div>
               ) : (
                 <textarea
@@ -325,7 +577,7 @@ export function SectionSandbox() {
                 onClick={handleRun}
                 disabled={isRunning || (!input.trim() && activeCapability !== 'vision') || (activeCapability === 'vision' && !uploadedImage)}
                 className="mt-3 w-full py-3 bg-[#c9956c] text-white text-xs tracking-wider
-                           hover:bg-[#b8855c] transition-all disabled:opacity-50 rounded-xl
+                           hover:bg-[#b8855c] transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-xl
                            flex items-center justify-center gap-2"
               >
                 {isRunning ? (
@@ -363,7 +615,7 @@ export function SectionSandbox() {
                     {/* Chat result */}
                     {activeCapability === 'chat' && typeof result === 'string' && (
                       <div className="p-4 bg-black/30 border border-white/5 rounded-xl">
-                        <p className="text-white/80 text-sm leading-relaxed">{result}</p>
+                        <p className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">{result}</p>
                       </div>
                     )}
 
