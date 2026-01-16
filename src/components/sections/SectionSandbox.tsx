@@ -302,7 +302,7 @@ export function SectionSandbox() {
   }
 
   return (
-    <section id="sandbox" className="relative min-h-screen py-20 bg-black">
+    <section id="sandbox" className="relative min-h-screen py-20 bg-black pointer-events-auto">
       <div className="px-6 md:px-12 lg:px-20 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-10">

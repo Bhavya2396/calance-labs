@@ -11,7 +11,7 @@ const STEPS = [
 
 export function SectionApproach() {
   return (
-    <section id="approach" className="relative min-h-screen flex items-center bg-black">
+    <section id="approach" className="relative min-h-screen flex items-center bg-black pointer-events-auto">
       {/* Content positioned left */}
       <div className="p-6 md:p-12 lg:p-20 max-w-2xl">
         <motion.p

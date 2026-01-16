@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 
 export function SectionHero() {
   return (
-    <section id="hero" className="relative h-screen flex items-end bg-black">
+    <section id="hero" className="relative h-screen flex items-end bg-black pointer-events-auto">
       {/* Content positioned bottom-left, away from 3D */}
       <div className="p-6 md:p-12 lg:p-20 pb-24 max-w-xl">
         <motion.p

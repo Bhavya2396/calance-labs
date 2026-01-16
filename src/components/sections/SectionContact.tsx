@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 
 export function SectionContact() {
   return (
-    <section id="contact" className="relative min-h-screen flex flex-col justify-end bg-black">
+    <section id="contact" className="relative min-h-screen flex flex-col justify-end bg-black pointer-events-auto">
       {/* Gradient overlay for readability */}
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none" />
       
