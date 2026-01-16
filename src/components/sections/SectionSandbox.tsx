@@ -113,7 +113,7 @@ const CAPABILITIES = [
     icon: DocumentIcon, 
     desc: 'Document processing',
     valueProps: ['Data extraction', 'Classification', 'Intelligent parsing'],
-    inputType: 'text' as const,
+    inputType: 'document' as const,
   },
   { 
     id: 'analytics' as const, 
@@ -121,7 +121,7 @@ const CAPABILITIES = [
     icon: AnalyticsIcon, 
     desc: 'Predictive insights',
     valueProps: ['Trend analysis', 'Forecasting', 'Actionable metrics'],
-    inputType: 'text' as const,
+    inputType: 'csv' as const,
   },
 ]
 
@@ -131,9 +131,13 @@ export function SectionSandbox() {
   const [input, setInput] = useState('')
   const [result, setResult] = useState<string | WorkflowStep[] | AnalyticsResult | VisionResult | DocumentResult | null>(null)
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
+  const [uploadedDocument, setUploadedDocument] = useState<{ name: string; content: string } | null>(null)
+  const [uploadedCSV, setUploadedCSV] = useState<{ name: string; content: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [showValueProposition, setShowValueProposition] = useState(true)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const imageInputRef = useRef<HTMLInputElement>(null)
+  const documentInputRef = useRef<HTMLInputElement>(null)
+  const csvInputRef = useRef<HTMLInputElement>(null)
   
   const companyData = useStore((state) => state.companyData)
   const triggerPulse = useStore((state) => state.triggerPulse)
@@ -169,8 +173,22 @@ export function SectionSandbox() {
   }, [activeCapability, companyData?.company])
 
   const handleRun = async () => {
-    if (!input.trim() && activeCapability !== 'vision') return
-    if (activeCapability === 'vision' && !uploadedImage) return
+    // Validation
+    if (activeCapability === 'vision' && !uploadedImage) {
+      setError('Please upload an image first')
+      return
+    }
+    if (activeCapability === 'documents' && !uploadedDocument) {
+      setError('Please upload a document first')
+      return
+    }
+    if (activeCapability === 'analytics' && !uploadedCSV && !input.trim()) {
+      setError('Please upload a CSV file or enter a query')
+      return
+    }
+    if ((activeCapability === 'chat' || activeCapability === 'agents') && !input.trim()) {
+      return
+    }
     
     setIsRunning(true)
     setResult(null)
@@ -196,15 +214,25 @@ export function SectionSandbox() {
           }
           break
         case 'documents':
-          resultData = await processDocument(input, 'general', context)
+          if (uploadedDocument) {
+            resultData = await processDocument(uploadedDocument.content, uploadedDocument.name, context)
+          }
           break
         case 'analytics':
-          resultData = await analyzeData(input, context)
+          resultData = await analyzeData(
+            input || `Analyze the uploaded data for ${companyData?.company || 'the business'}`,
+            context,
+            uploadedCSV?.content
+          )
           break
       }
 
       setResult(resultData)
-      addToSandboxHistory({ prompt: input, result: resultData, timestamp: Date.now() })
+      addToSandboxHistory({ 
+        prompt: input || uploadedDocument?.name || uploadedCSV?.name || 'File analysis', 
+        result: resultData, 
+        timestamp: Date.now() 
+      })
       triggerPulse()
     } catch (err) {
       console.error('Sandbox error:', err)
@@ -229,10 +257,46 @@ export function SectionSandbox() {
     }
   }
 
+  const handleDocumentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        setError('Document too large. Please use a file under 10MB.')
+        return
+      }
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const content = e.target?.result as string
+        setUploadedDocument({ name: file.name, content })
+        setError(null)
+      }
+      reader.readAsText(file)
+    }
+  }
+
+  const handleCSVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setError('CSV too large. Please use a file under 5MB.')
+        return
+      }
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const content = e.target?.result as string
+        setUploadedCSV({ name: file.name, content })
+        setError(null)
+      }
+      reader.readAsText(file)
+    }
+  }
+
   const resetDemo = () => {
     setResult(null)
     setInput('')
     setUploadedImage(null)
+    setUploadedDocument(null)
+    setUploadedCSV(null)
     setError(null)
     setShowValueProposition(true)
   }
@@ -376,7 +440,7 @@ export function SectionSandbox() {
             className="bg-white/[0.02] border border-white/5 rounded-2xl overflow-hidden"
           >
             {/* Business prompts bar */}
-            {businessPrompts.length > 0 && (
+            {businessPrompts.length > 0 && activeCapability !== 'documents' && activeCapability !== 'analytics' && (
               <div className="p-4 bg-black/20 border-b border-white/5">
                 <p className="text-white/30 text-xs mb-3">
                   PROMPTS FOR {companyData?.company?.toUpperCase()}
@@ -439,17 +503,17 @@ export function SectionSandbox() {
 
               {/* Input area */}
               <div className="mb-6">
-                {activeCapability === 'vision' ? (
+                {activeCapability === 'vision' && (
                   <div className="space-y-3">
                     <input
                       type="file"
-                      ref={fileInputRef}
+                      ref={imageInputRef}
                       onChange={handleImageUpload}
                       accept="image/*"
                       className="hidden"
                     />
                     <button
-                      onClick={() => fileInputRef.current?.click()}
+                      onClick={() => imageInputRef.current?.click()}
                       className="w-full py-10 border-2 border-dashed border-white/10 rounded-xl
                                  hover:border-[#f9a86c]/30 transition-colors flex flex-col items-center gap-3"
                     >
@@ -469,18 +533,119 @@ export function SectionSandbox() {
                       )}
                     </button>
                   </div>
-                ) : (
+                )}
+
+                {activeCapability === 'documents' && (
+                  <div className="space-y-3">
+                    <input
+                      type="file"
+                      ref={documentInputRef}
+                      onChange={handleDocumentUpload}
+                      accept=".txt,.pdf,.doc,.docx,.json,.xml"
+                      className="hidden"
+                    />
+                    <button
+                      onClick={() => documentInputRef.current?.click()}
+                      className="w-full py-10 border-2 border-dashed border-white/10 rounded-xl
+                                 hover:border-[#f9a86c]/30 transition-colors flex flex-col items-center gap-3"
+                    >
+                      {uploadedDocument ? (
+                        <>
+                          <div className="w-16 h-16 opacity-70">
+                            <DocumentIcon active={true} />
+                          </div>
+                          <div className="text-center">
+                            <span className="text-white text-sm block">{uploadedDocument.name}</span>
+                            <span className="text-white/40 text-xs">
+                              {(uploadedDocument.content.length / 1024).toFixed(1)} KB • Click to change
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-16 h-16 opacity-30">
+                            <DocumentIcon active={false} />
+                          </div>
+                          <span className="text-white/50 text-sm">Upload a document for processing</span>
+                          <span className="text-white/30 text-xs">TXT, PDF, DOC, DOCX, JSON up to 10MB</span>
+                        </>
+                      )}
+                    </button>
+                    {uploadedDocument && (
+                      <div className="p-3 bg-[#f9a86c]/5 border border-[#f9a86c]/20 rounded-lg">
+                        <p className="text-[#f9a86c] text-xs">
+                          Document loaded! AI will extract key data, classify content, and provide next actions.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeCapability === 'analytics' && (
+                  <div className="space-y-3">
+                    <input
+                      type="file"
+                      ref={csvInputRef}
+                      onChange={handleCSVUpload}
+                      accept=".csv,.xlsx,.xls"
+                      className="hidden"
+                    />
+                    <button
+                      onClick={() => csvInputRef.current?.click()}
+                      className="w-full py-10 border-2 border-dashed border-white/10 rounded-xl
+                                 hover:border-[#f9a86c]/30 transition-colors flex flex-col items-center gap-3"
+                    >
+                      {uploadedCSV ? (
+                        <>
+                          <div className="w-16 h-16 opacity-70">
+                            <AnalyticsIcon active={true} />
+                          </div>
+                          <div className="text-center">
+                            <span className="text-white text-sm block">{uploadedCSV.name}</span>
+                            <span className="text-white/40 text-xs">
+                              {uploadedCSV.content.split('\n').length} rows • Click to change
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-16 h-16 opacity-30">
+                            <AnalyticsIcon active={false} />
+                          </div>
+                          <span className="text-white/50 text-sm">Upload data for analysis</span>
+                          <span className="text-white/30 text-xs">CSV, XLSX up to 5MB</span>
+                        </>
+                      )}
+                    </button>
+                    <div className="relative">
+                      <textarea
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        placeholder={uploadedCSV ? "What insights do you want? (optional)" : "Or describe the data analysis you need..."}
+                        rows={3}
+                        className="w-full px-4 py-3 bg-black/30 border border-white/10 text-white text-sm
+                                   placeholder-white/30 focus:outline-none focus:border-[#f9a86c]/50
+                                   transition-colors rounded-xl resize-none"
+                      />
+                    </div>
+                    {uploadedCSV && (
+                      <div className="p-3 bg-[#f9a86c]/5 border border-[#f9a86c]/20 rounded-lg">
+                        <p className="text-[#f9a86c] text-xs">
+                          CSV loaded! AI will analyze trends, forecast outcomes, and provide actionable recommendations.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {(activeCapability === 'chat' || activeCapability === 'agents') && (
                   <div className="space-y-3">
                     <div className="relative">
                       <textarea
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        placeholder={
-                          activeCapability === 'documents' 
-                            ? 'Paste document content here...' 
-                            : `Describe what you want ${currentCapability.title} to do...`
-                        }
-                        rows={activeCapability === 'documents' ? 8 : 4}
+                        placeholder={`Describe what you want ${currentCapability.title} to do...`}
+                        rows={4}
                         className="w-full px-4 py-3 bg-black/30 border border-white/10 text-white text-sm
                                    placeholder-white/30 focus:outline-none focus:border-[#f9a86c]/50
                                    transition-colors rounded-xl resize-none"
@@ -501,7 +666,12 @@ export function SectionSandbox() {
                 
                 <button
                   onClick={handleRun}
-                  disabled={isRunning || (!input.trim() && activeCapability !== 'vision') || (activeCapability === 'vision' && !uploadedImage)}
+                  disabled={isRunning || (
+                    (activeCapability === 'chat' || activeCapability === 'agents') && !input.trim()) ||
+                    (activeCapability === 'vision' && !uploadedImage) ||
+                    (activeCapability === 'documents' && !uploadedDocument) ||
+                    (activeCapability === 'analytics' && !uploadedCSV && !input.trim()
+                  )}
                   className="mt-4 w-full py-4 bg-[#f9a86c] text-white text-sm font-medium tracking-wider
                              hover:bg-[#e89a5e] transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-xl
                              flex items-center justify-center gap-3"
@@ -526,7 +696,7 @@ export function SectionSandbox() {
                 </button>
               </div>
 
-              {/* Results */}
+              {/* Results - keeping the existing result rendering code */}
               <AnimatePresence mode="wait">
                 {result && (
                   <motion.div
@@ -653,6 +823,11 @@ export function SectionSandbox() {
                             ))}
                           </div>
                         )}
+                        <div className="p-3 bg-[#f9a86c]/10 border border-[#f9a86c]/20 rounded-lg">
+                          <p className="text-[#f9a86c] text-xs">
+                            📄 Document "{uploadedDocument?.name}" processed successfully
+                          </p>
+                        </div>
                       </div>
                     )}
 
@@ -698,6 +873,14 @@ export function SectionSandbox() {
                           <p className="text-[#f9a86c] text-xs mb-1">💡 RECOMMENDATION</p>
                           <p className="text-white/80 text-sm">{(result as AnalyticsResult).recommendation}</p>
                         </div>
+                        
+                        {uploadedCSV && (
+                          <div className="p-3 bg-[#f9a86c]/10 border border-[#f9a86c]/20 rounded-lg">
+                            <p className="text-[#f9a86c] text-xs">
+                              📊 Analyzed {uploadedCSV.content.split('\n').length} rows from "{uploadedCSV.name}"
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </motion.div>
