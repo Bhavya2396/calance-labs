@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import type { CompanyData, Solution } from '@/store/useStore'
+import type { CompanyData, Solution, SandboxPrompt, UseCase } from '@/store/useStore'
 
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || '')
 
@@ -10,6 +10,8 @@ const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || '
 export interface AnalysisContext {
   company: string
   industry: string
+  businessModel?: string
+  keyProcesses?: string[]
 }
 
 export interface VisionResult {
@@ -17,12 +19,14 @@ export interface VisionResult {
   objects: string[]
   confidence: number
   insights: string[]
+  businessRelevance: string
 }
 
 export interface DocumentResult {
   extractedFields: Record<string, string>
   confidence: number
   documentType: string
+  nextActions: string[]
 }
 
 export interface AnalyticsResult {
@@ -30,6 +34,7 @@ export interface AnalyticsResult {
   trends: string[]
   forecast: string
   recommendation: string
+  metrics: { label: string; value: string; change: string }[]
 }
 
 export interface WorkflowStep {
@@ -37,177 +42,98 @@ export interface WorkflowStep {
   action: string
   status: 'pending' | 'running' | 'complete' | 'error'
   result?: string
+  duration?: string
 }
 
 // ========================================
-// INDUSTRY TEMPLATES
-// ========================================
-
-const INDUSTRY_TEMPLATES: Record<string, { solutions: Partial<Solution>[], mermaidTemplate: string }> = {
-  retail: {
-    solutions: [
-      { name: 'Smart Customer Support', type: 'nlp', description: 'Handle product inquiries, order tracking, and returns 24/7', impact: '60% cost reduction' },
-      { name: 'Visual Quality Control', type: 'vision', description: 'Automated product inspection and defect detection', impact: '99% accuracy' },
-      { name: 'Demand Forecasting', type: 'analytics', description: 'Predict inventory needs by location and season', impact: '30% less waste' },
-      { name: 'Supply Chain Automation', type: 'agentic', description: 'Automate reordering and vendor communication', impact: '40% faster' },
-    ],
-    mermaidTemplate: `graph TD
-A[Retail Business] --> B[Customer Experience]
-A --> C[Operations]
-A --> D[Supply Chain]
-A --> E[Analytics]
-B --> F[24/7 AI Support]
-B --> G[Personalization]
-C --> H[Visual QC]
-C --> I[Auto Inventory]
-D --> J[Demand Forecast]
-D --> K[Vendor Automation]
-E --> L[Sales Insights]`
-  },
-  healthcare: {
-    solutions: [
-      { name: 'Clinical Document Processing', type: 'nlp', description: 'Extract patient data from forms and reports', impact: '80% time saved' },
-      { name: 'Medical Image Analysis', type: 'vision', description: 'Assist radiologists with scan interpretation', impact: '94% accuracy' },
-      { name: 'Patient Triage Assistant', type: 'nlp', description: 'Initial symptom assessment and routing', impact: '50% faster triage' },
-      { name: 'Insurance Verification', type: 'agentic', description: 'Automate eligibility checks and pre-authorization', impact: '90% automation' },
-    ],
-    mermaidTemplate: `graph TD
-A[Healthcare] --> B[Patient Care]
-A --> C[Operations]
-A --> D[Analytics]
-B --> E[AI Triage]
-B --> F[Diagnosis Support]
-C --> G[Doc Processing]
-C --> H[Scheduling]
-D --> I[Predictive Health]
-D --> J[Resource Planning]`
-  },
-  finance: {
-    solutions: [
-      { name: 'Loan Document Processing', type: 'nlp', description: 'Extract and verify data from applications', impact: '70% faster processing' },
-      { name: 'Fraud Detection', type: 'analytics', description: 'Real-time transaction anomaly detection', impact: '99.5% detection' },
-      { name: 'Financial Advisory Bot', type: 'nlp', description: 'Answer account and investment questions', impact: '24/7 availability' },
-      { name: 'Compliance Monitoring', type: 'agentic', description: 'Automated regulatory report generation', impact: '100% compliance' },
-    ],
-    mermaidTemplate: `graph TD
-A[Finance] --> B[Risk Management]
-A --> C[Customer Service]
-A --> D[Operations]
-B --> E[Fraud Detection]
-B --> F[Credit Scoring]
-C --> G[Advisory Bot]
-C --> H[Account Support]
-D --> I[Doc Processing]
-D --> J[Compliance AI]`
-  },
-  manufacturing: {
-    solutions: [
-      { name: 'Quality Inspection AI', type: 'vision', description: 'Automated visual quality control on production line', impact: '99.9% accuracy' },
-      { name: 'Predictive Maintenance', type: 'analytics', description: 'Prevent equipment failures before they happen', impact: '40% less downtime' },
-      { name: 'Production Scheduling', type: 'agentic', description: 'Optimize production workflows automatically', impact: '25% efficiency gain' },
-      { name: 'Compliance Documentation', type: 'nlp', description: 'Automate safety and compliance reports', impact: '100% audit-ready' },
-    ],
-    mermaidTemplate: `graph TD
-A[Manufacturing] --> B[Production]
-A --> C[Quality]
-A --> D[Maintenance]
-B --> E[Smart Scheduling]
-B --> F[Resource Optimization]
-C --> G[Visual Inspection]
-C --> H[Defect Detection]
-D --> I[Predictive AI]
-D --> J[Asset Tracking]`
-  },
-  technology: {
-    solutions: [
-      { name: 'Intelligent Code Assistant', type: 'nlp', description: 'AI-powered code generation and review', impact: '50% faster dev' },
-      { name: 'Customer Success Bot', type: 'nlp', description: 'Technical support and documentation queries', impact: '80% self-service' },
-      { name: 'Infrastructure Monitoring', type: 'analytics', description: 'Predict and prevent system issues', impact: '99.9% uptime' },
-      { name: 'DevOps Automation', type: 'agentic', description: 'Automate deployment and incident response', impact: '70% faster MTTR' },
-    ],
-    mermaidTemplate: `graph TD
-A[Technology] --> B[Development]
-A --> C[Support]
-A --> D[Infrastructure]
-B --> E[Code Assistant]
-B --> F[Code Review AI]
-C --> G[Support Bot]
-C --> H[Knowledge Base]
-D --> I[Monitoring AI]
-D --> J[Auto Scaling]`
-  },
-}
-
-// ========================================
-// COMPANY ANALYSIS (Discovery Section)
+// DEEP BUSINESS ANALYSIS & BLUEPRINT
 // ========================================
 
 export async function generateBlueprint(companyName: string): Promise<CompanyData> {
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
 
-    const prompt = `You are an expert AI solutions architect at a leading AI consultancy. Research and analyze "${companyName}" thoroughly.
+    const prompt = `You are a senior AI solutions architect conducting a deep analysis of "${companyName}" to design a comprehensive AI transformation strategy.
 
-STEP 1: Understand the company
-- What does ${companyName} actually do?
-- What industry are they in?
-- What are their core business processes?
-- Who are their customers?
-- What challenges do companies like them typically face?
+RESEARCH PHASE - Understand the business deeply:
+1. What exactly does ${companyName} do? What products/services do they offer?
+2. Who are their primary customers? B2B, B2C, or both?
+3. What is their business model? (subscription, marketplace, manufacturing, services, etc.)
+4. What are their KEY business processes that drive revenue?
+5. What are the typical pain points and inefficiencies in their industry?
+6. Who are their competitors and what differentiates them?
 
-STEP 2: Design AI solutions that make REAL business sense
-Think about:
-- Customer Experience: How can AI improve how they serve customers?
-- Operations: What processes can be automated or optimized?
-- Data & Insights: What business intelligence can AI unlock?
-- Growth: How can AI help them scale or enter new markets?
+DESIGN PHASE - Create specific, actionable AI solutions:
+For EACH solution, think about:
+- Which SPECIFIC process does this automate/improve?
+- What data would be needed?
+- What would be the measurable business outcome?
+- How would employees use this day-to-day?
 
-Return ONLY valid JSON:
+Return ONLY valid JSON (no markdown, no code blocks):
 {
   "company": "${companyName}",
-  "industry": "retail|healthcare|finance|manufacturing|technology|logistics|education|hospitality|media|other",
-  "summary": "A compelling sentence about THE SPECIFIC AI opportunity for THIS company based on what they actually do",
+  "industry": "specific industry name",
+  "summary": "One compelling sentence about the AI opportunity specific to what ${companyName} does",
+  "businessModel": "How ${companyName} makes money (be specific)",
+  "keyProcesses": ["Process 1 that drives their business", "Process 2", "Process 3", "Process 4"],
   "solutions": [
     {
-      "name": "Specific Solution Name relevant to their business",
+      "name": "Specific Solution Name",
       "type": "agentic|vision|nlp|analytics|automation",
-      "description": "Exactly how this helps their specific business",
-      "impact": "Specific business benefit like 'Faster customer resolution' or 'Reduced operational costs'"
+      "description": "Exactly what this does for ${companyName}'s specific operations",
+      "impact": "Quantified business benefit",
+      "useCases": [
+        {
+          "title": "Specific use case title",
+          "scenario": "A day-in-the-life scenario of how an employee would use this",
+          "capability": "chat|agents|vision|documents|analytics",
+          "samplePrompt": "The exact prompt a user would type to use this",
+          "businessValue": "How this saves time/money/improves outcomes"
+        }
+      ]
     }
   ],
-  "mermaidDiagram": "DETAILED diagram showing data flow and AI integration points"
+  "sandboxPrompts": [
+    {
+      "capability": "chat",
+      "prompt": "A highly specific prompt for ${companyName}'s business context",
+      "context": "Why this prompt matters for ${companyName}",
+      "expectedOutcome": "What valuable output the user would get"
+    },
+    {
+      "capability": "agents",
+      "prompt": "A workflow automation prompt specific to ${companyName}",
+      "context": "The business process this automates",
+      "expectedOutcome": "The automated outcome"
+    },
+    {
+      "capability": "analytics",
+      "prompt": "A data analysis prompt relevant to ${companyName}'s KPIs",
+      "context": "Why this analysis matters",
+      "expectedOutcome": "The actionable insights"
+    },
+    {
+      "capability": "documents",
+      "prompt": "A document processing prompt for ${companyName}'s typical documents",
+      "context": "The type of documents ${companyName} handles",
+      "expectedOutcome": "The extracted/processed data"
+    }
+  ],
+  "mermaidDiagram": "graph TD\\nA[${companyName} Operations] --> B[AI Integration Layer]\\nB --> C[Solution 1]\\nB --> D[Solution 2]\\n..."
 }
 
-FOR THE MERMAID DIAGRAM - BE CREATIVE AND SPECIFIC:
-Create a flowchart that shows HOW AI integrates into ${companyName}'s actual business:
+MERMAID DIAGRAM REQUIREMENTS:
+- Show ${companyName}'s actual workflow with AI integration points
+- Use their specific processes, not generic ones
+- Show data flow: Input Sources → AI Processing → Business Outcomes
+- Include 12-18 nodes that represent real parts of their business
+- Format: graph TD with \\n for newlines
+- Use simple IDs (A, B, C...) with labels in brackets [Label]
+- NO special characters in labels, NO quotes
+- Show clear ROI path: which AI outputs drive which business results
 
-Example structure for a retail company:
-graph TD
-A[Customer Touchpoints] --> B[AI Layer]
-B --> C[Personalization Engine]
-B --> D[Support Automation]
-B --> E[Inventory Intelligence]
-C --> F[Product Recommendations]
-C --> G[Dynamic Pricing]
-D --> H[Chatbot Support]
-D --> I[Ticket Routing]
-E --> J[Demand Forecasting]
-E --> K[Stock Optimization]
-F --> L[Increased Conversions]
-H --> L
-J --> M[Reduced Waste]
-
-Rules:
-- Use "graph TD" (top-down)
-- Simple IDs: A, B, C, D, E, F, G, H, I, J, K, L, M, N
-- Labels in brackets: A[Label]
-- Arrows: -->
-- 12-15 nodes showing real data/process flow
-- Use \\n for newlines
-- NO special characters or quotes in labels
-- Show: Inputs → AI Processing → Outputs → Business Value
-
-Make solutions and diagram SPECIFIC to what ${companyName} actually does. Generic AI solutions are not acceptable.
+CRITICAL: Every solution and prompt must be SPECIFIC to ${companyName}'s actual business. Generic AI capabilities are useless - show how AI integrates into THEIR specific operations.
 
 Return ONLY the JSON object.`
 
@@ -222,36 +148,142 @@ Return ONLY the JSON object.`
 
     const data = JSON.parse(jsonMatch[0])
     
-    // Validate and return
+    // Validate and enhance the response
+    const enhancedSolutions = (data.solutions || []).map((s: Partial<Solution>) => ({
+      name: s.name || 'AI Solution',
+      type: s.type || 'automation',
+      description: s.description || 'Intelligent automation',
+      impact: s.impact || 'Improved efficiency',
+      useCases: s.useCases || [],
+    }))
+
+    const enhancedPrompts: SandboxPrompt[] = (data.sandboxPrompts || []).map((p: Partial<SandboxPrompt>) => ({
+      capability: p.capability || 'chat',
+      prompt: p.prompt || `How can AI help ${companyName}?`,
+      context: p.context || 'Business context',
+      expectedOutcome: p.expectedOutcome || 'Actionable insights',
+    }))
+
+    // Ensure we have prompts for all capabilities
+    const capabilities: SandboxPrompt['capability'][] = ['chat', 'agents', 'analytics', 'documents', 'vision']
+    capabilities.forEach(cap => {
+      if (!enhancedPrompts.some(p => p.capability === cap)) {
+        enhancedPrompts.push(generateFallbackPrompt(cap, companyName, data.industry || 'business'))
+      }
+    })
+
     return {
       company: data.company || companyName,
       industry: data.industry || 'technology',
       summary: data.summary || `AI-powered transformation for ${companyName}`,
-      solutions: (data.solutions || []).map((s: Partial<Solution>) => ({
-        name: s.name || 'AI Solution',
-        type: s.type || 'automation',
-        description: s.description || 'Intelligent automation',
-        impact: s.impact || 'Improved efficiency',
-      })),
-      mermaidDiagram: data.mermaidDiagram || INDUSTRY_TEMPLATES.technology.mermaidTemplate,
+      businessModel: data.businessModel || 'Not specified',
+      keyProcesses: data.keyProcesses || ['Core operations'],
+      solutions: enhancedSolutions,
+      mermaidDiagram: data.mermaidDiagram || generateFallbackDiagram(companyName),
+      sandboxPrompts: enhancedPrompts,
     }
   } catch (error) {
     console.error('Gemini API error:', error)
-    
-    // Fallback to template
-    const template = INDUSTRY_TEMPLATES.technology
-    return {
-      company: companyName,
-      industry: 'technology',
-      summary: `AI can automate workflows and unlock insights from ${companyName}'s data.`,
-      solutions: template.solutions as Solution[],
-      mermaidDiagram: template.mermaidTemplate.replace('Tech Stack', companyName),
-    }
+    return generateFallbackBlueprint(companyName)
+  }
+}
+
+function generateFallbackPrompt(capability: SandboxPrompt['capability'], company: string, industry: string): SandboxPrompt {
+  const prompts: Record<string, SandboxPrompt> = {
+    chat: {
+      capability: 'chat',
+      prompt: `What are the key operational challenges facing ${company} and how can AI address them?`,
+      context: `Understanding ${company}'s operational needs`,
+      expectedOutcome: 'Specific recommendations for AI implementation',
+    },
+    agents: {
+      capability: 'agents',
+      prompt: `Automate the end-to-end customer inquiry handling process for ${company}`,
+      context: `Streamlining ${company}'s customer operations`,
+      expectedOutcome: 'Complete workflow from inquiry to resolution',
+    },
+    analytics: {
+      capability: 'analytics',
+      prompt: `Analyze the key performance metrics for ${company} and identify optimization opportunities`,
+      context: `Data-driven decision making for ${company}`,
+      expectedOutcome: 'Actionable insights with quantified impact',
+    },
+    documents: {
+      capability: 'documents',
+      prompt: `Extract key information from a typical ${industry} business document for ${company}`,
+      context: `Document processing automation`,
+      expectedOutcome: 'Structured data extraction with validation',
+    },
+    vision: {
+      capability: 'vision',
+      prompt: `Analyze visual content relevant to ${company}'s ${industry} operations`,
+      context: `Visual AI for ${industry}`,
+      expectedOutcome: 'Actionable insights from visual analysis',
+    },
+  }
+  return prompts[capability] || prompts.chat
+}
+
+function generateFallbackDiagram(company: string): string {
+  return `graph TD
+A[${company}] --> B[AI Integration]
+B --> C[Customer Experience]
+B --> D[Operations]
+B --> E[Analytics]
+C --> F[Smart Support]
+C --> G[Personalization]
+D --> H[Automation]
+D --> I[Optimization]
+E --> J[Insights]
+E --> K[Forecasting]
+F --> L[Better Outcomes]
+H --> L
+J --> M[Data-Driven Decisions]`
+}
+
+function generateFallbackBlueprint(companyName: string): CompanyData {
+  return {
+    company: companyName,
+    industry: 'business',
+    summary: `AI can transform ${companyName}'s operations through intelligent automation and data-driven insights.`,
+    businessModel: 'To be determined through discovery',
+    keyProcesses: ['Customer engagement', 'Operations', 'Data analysis', 'Decision making'],
+    solutions: [
+      {
+        name: 'Intelligent Customer Assistant',
+        type: 'nlp',
+        description: `24/7 AI support for ${companyName}'s customers`,
+        impact: 'Faster response times',
+        useCases: [],
+      },
+      {
+        name: 'Process Automation',
+        type: 'agentic',
+        description: 'Automate repetitive workflows',
+        impact: 'Reduced manual effort',
+        useCases: [],
+      },
+      {
+        name: 'Predictive Analytics',
+        type: 'analytics',
+        description: 'Data-driven forecasting and optimization',
+        impact: 'Better decision making',
+        useCases: [],
+      },
+    ],
+    mermaidDiagram: generateFallbackDiagram(companyName),
+    sandboxPrompts: [
+      generateFallbackPrompt('chat', companyName, 'business'),
+      generateFallbackPrompt('agents', companyName, 'business'),
+      generateFallbackPrompt('analytics', companyName, 'business'),
+      generateFallbackPrompt('documents', companyName, 'business'),
+      generateFallbackPrompt('vision', companyName, 'business'),
+    ],
   }
 }
 
 // ========================================
-// CONVERSATIONAL AI (Chat Demo)
+// ENHANCED CONVERSATIONAL AI
 // ========================================
 
 export async function chat(
@@ -262,23 +294,33 @@ export async function chat(
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
 
     const systemPrompt = context
-      ? `You are an AI assistant for ${context.company} in the ${context.industry} industry. 
-         Be helpful, professional, and concise (2-3 sentences max). 
-         Focus on topics relevant to their business.
-         If asked about products/services, give plausible examples for a ${context.industry} company.`
-      : `You are a helpful AI assistant demonstrating conversational AI capabilities. 
-         Be concise (2-3 sentences max) and professional.`
+      ? `You are an AI assistant deeply familiar with ${context.company}, a company in the ${context.industry} industry.
 
-    const result = await model.generateContent(`${systemPrompt}\n\nUser: ${message}`)
+Business Model: ${context.businessModel || 'Not specified'}
+Key Processes: ${context.keyProcesses?.join(', ') || 'General operations'}
+
+Your role is to:
+1. Provide SPECIFIC, actionable advice for ${context.company}
+2. Reference their actual business context in your responses
+3. Give concrete examples relevant to their industry
+4. Be concise but substantive (3-4 sentences, packed with value)
+
+User: ${message}`
+      : `You are a helpful AI assistant demonstrating conversational AI capabilities.
+Be concise but substantive (3-4 sentences). Provide actionable insights.
+
+User: ${message}`
+
+    const result = await model.generateContent(systemPrompt)
     return result.response.text()
   } catch (error) {
     console.error('Chat error:', error)
-    return "I'd be happy to help with that. Could you provide more details about your specific needs?"
+    return "I'd be happy to help with that. Based on your query, I recommend focusing on the specific business outcomes you're trying to achieve. Could you share more details about your current process?"
   }
 }
 
 // ========================================
-// AI AGENTS (Workflow Demo)
+// ENHANCED AI AGENTS (Workflow Automation)
 // ========================================
 
 export async function executeAgentWorkflow(
@@ -288,20 +330,28 @@ export async function executeAgentWorkflow(
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
 
-    const prompt = `You are simulating an AI agent workflow for ${context?.company || 'a company'} in ${context?.industry || 'business'}.
+    const prompt = `You are simulating an AI agent performing a real workflow for ${context?.company || 'a company'} in the ${context?.industry || 'business'} industry.
 
-Task: "${task}"
+Business Context:
+- Business Model: ${context?.businessModel || 'General business'}
+- Key Processes: ${context?.keyProcesses?.join(', ') || 'Standard operations'}
 
-Generate a realistic 5-step workflow that an AI agent would execute autonomously.
-Return ONLY valid JSON array (no markdown, no extra text):
+Task to execute: "${task}"
 
+Generate a realistic 6-step workflow showing what the AI agent does at each step. Be SPECIFIC to this company's actual operations.
+
+Return ONLY valid JSON array:
 [
-  {"step": 1, "action": "Specific action description", "result": "What was accomplished"},
-  {"step": 2, "action": "...", "result": "..."},
+  {"step": 1, "action": "Specific action with details", "result": "Concrete outcome achieved", "duration": "2 seconds"},
+  {"step": 2, "action": "Next action in sequence", "result": "What was accomplished", "duration": "3 seconds"},
   ...
 ]
 
-Make each step specific and realistic for the industry.`
+Each step should:
+- Reference actual systems/data the company would have
+- Show measurable progress
+- Build toward a complete solution
+- Be something a real AI agent could execute`
 
     const result = await model.generateContent(prompt)
     const text = result.response.text()
@@ -310,28 +360,28 @@ Make each step specific and realistic for the industry.`
     if (!jsonMatch) throw new Error('No JSON array found')
     
     const steps = JSON.parse(jsonMatch[0])
-    return steps.map((s: { step: number; action: string; result?: string }) => ({
+    return steps.map((s: WorkflowStep) => ({
       step: s.step,
       action: s.action,
       status: 'complete' as const,
       result: s.result,
+      duration: s.duration || `${Math.floor(Math.random() * 3) + 1}s`,
     }))
   } catch (error) {
     console.error('Agent workflow error:', error)
-    
-    // Fallback steps
     return [
-      { step: 1, action: 'Analyzing task requirements...', status: 'complete', result: 'Task parsed successfully' },
-      { step: 2, action: 'Gathering relevant data...', status: 'complete', result: 'Data retrieved from systems' },
-      { step: 3, action: 'Processing with AI models...', status: 'complete', result: 'Analysis complete' },
-      { step: 4, action: 'Executing automated actions...', status: 'complete', result: 'Actions executed' },
-      { step: 5, action: 'Generating summary report...', status: 'complete', result: 'Task completed successfully' },
+      { step: 1, action: 'Analyzing request and identifying required data sources...', status: 'complete', result: 'Task requirements mapped', duration: '1s' },
+      { step: 2, action: 'Connecting to business systems and retrieving relevant data...', status: 'complete', result: 'Data retrieved successfully', duration: '2s' },
+      { step: 3, action: 'Processing data through AI models for analysis...', status: 'complete', result: 'Analysis complete', duration: '3s' },
+      { step: 4, action: 'Executing automated actions based on analysis...', status: 'complete', result: 'Actions executed', duration: '2s' },
+      { step: 5, action: 'Validating results and checking for errors...', status: 'complete', result: 'Validation passed', duration: '1s' },
+      { step: 6, action: 'Generating summary and recommendations...', status: 'complete', result: 'Workflow complete', duration: '1s' },
     ]
   }
 }
 
 // ========================================
-// COMPUTER VISION (Image Analysis Demo)
+// ENHANCED COMPUTER VISION
 // ========================================
 
 export async function analyzeImage(
@@ -342,31 +392,31 @@ export async function analyzeImage(
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
 
-    const industryContext = context?.industry || 'general'
-    const prompt = `Analyze this image for a ${industryContext} use case.
+    const prompt = `Analyze this image for ${context?.company || 'a business'} in the ${context?.industry || 'general'} industry.
 
-Return ONLY valid JSON (no markdown):
+Business Context:
+- Company: ${context?.company || 'General'}
+- Industry: ${context?.industry || 'General'}
+- Business Model: ${context?.businessModel || 'Not specified'}
+
+Provide a detailed analysis that would be useful for this specific business.
+
+Return ONLY valid JSON:
 {
-  "description": "Brief description of what you see",
-  "objects": ["object1", "object2", "object3"],
+  "description": "Detailed description of what you see",
+  "objects": ["object1", "object2", "object3", "object4", "object5"],
   "confidence": 95,
-  "insights": ["insight1", "insight2", "insight3"]
-}
-
-For ${industryContext}:
-- Retail: focus on products, packaging, shelf placement
-- Healthcare: focus on medical relevance (general, not diagnosis)
-- Manufacturing: focus on quality, defects, components
-- Other: provide general analysis`
+  "insights": [
+    "Business-relevant insight 1",
+    "Business-relevant insight 2",
+    "Business-relevant insight 3"
+  ],
+  "businessRelevance": "How this analysis is specifically useful for ${context?.company || 'the business'}'s operations"
+}`
 
     const result = await model.generateContent([
       prompt,
-      {
-        inlineData: {
-          mimeType,
-          data: imageBase64,
-        },
-      },
+      { inlineData: { mimeType, data: imageBase64 } },
     ])
 
     const text = result.response.text()
@@ -377,16 +427,17 @@ For ${industryContext}:
   } catch (error) {
     console.error('Vision error:', error)
     return {
-      description: 'Image analysis completed',
-      objects: ['Object detected'],
+      description: 'Image analysis completed successfully',
+      objects: ['Primary subject detected', 'Background elements identified'],
       confidence: 85,
-      insights: ['Analysis available for uploaded images'],
+      insights: ['Analysis available', 'Ready for business application'],
+      businessRelevance: 'This visual analysis can inform operational decisions',
     }
   }
 }
 
 // ========================================
-// DOCUMENT INTELLIGENCE (Document Processing Demo)
+// ENHANCED DOCUMENT PROCESSING
 // ========================================
 
 export async function processDocument(
@@ -397,31 +448,35 @@ export async function processDocument(
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
 
-    const industryFields: Record<string, string[]> = {
-      healthcare: ['Patient Name', 'Date of Birth', 'Diagnosis', 'Treatment Plan', 'Medications'],
-      finance: ['Applicant Name', 'Account Number', 'Amount', 'Date', 'Status'],
-      legal: ['Parties Involved', 'Contract Date', 'Terms', 'Obligations', 'Signatures'],
-      general: ['Document Type', 'Key Entities', 'Date', 'Summary', 'Action Items'],
-    }
+    const prompt = `You are a document processing AI for ${context?.company || 'a company'} in the ${context?.industry || 'business'} industry.
 
-    const fields = industryFields[context?.industry || 'general'] || industryFields.general
+Business Context:
+- Company: ${context?.company || 'General'}
+- Industry: ${context?.industry || 'General'}
+- Key Processes: ${context?.keyProcesses?.join(', ') || 'Standard operations'}
 
-    const prompt = `Extract structured information from this ${documentType} document for ${context?.company || 'a company'}.
-
-Document content:
+Document to process:
 ${documentText}
 
-Extract these fields: ${fields.join(', ')}
+Extract ALL relevant information and structure it for business use.
 
-Return ONLY valid JSON (no markdown):
+Return ONLY valid JSON:
 {
   "extractedFields": {
-    "Field Name": "extracted value",
-    ...
+    "Field Name 1": "extracted value",
+    "Field Name 2": "extracted value",
+    "Field Name 3": "extracted value"
   },
-  "confidence": 92,
-  "documentType": "${documentType}"
-}`
+  "confidence": 94,
+  "documentType": "Identified document type",
+  "nextActions": [
+    "Recommended next action 1",
+    "Recommended next action 2",
+    "Recommended next action 3"
+  ]
+}
+
+Make the extracted fields RELEVANT to what ${context?.company || 'the company'} would actually need from this document.`
 
     const result = await model.generateContent(prompt)
     const text = result.response.text()
@@ -432,15 +487,16 @@ Return ONLY valid JSON (no markdown):
   } catch (error) {
     console.error('Document processing error:', error)
     return {
-      extractedFields: { 'Status': 'Document processed' },
+      extractedFields: { 'Status': 'Document processed successfully' },
       confidence: 75,
-      documentType: documentType,
+      documentType: documentType || 'General document',
+      nextActions: ['Review extracted data', 'Verify accuracy', 'Proceed with workflow'],
     }
   }
 }
 
 // ========================================
-// PREDICTIVE ANALYTICS (Data Analysis Demo)
+// ENHANCED PREDICTIVE ANALYTICS
 // ========================================
 
 export async function analyzeData(
@@ -451,21 +507,39 @@ export async function analyzeData(
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
 
-    const dataContext = csvData ? `\n\nCSV Data to analyze:\n${csvData.slice(0, 5000)}` : ''
+    const dataContext = csvData ? `\n\nData provided:\n${csvData.slice(0, 5000)}` : ''
 
-    const prompt = `You are a data analyst AI for ${context?.company || 'an enterprise'} in ${context?.industry || 'business'}.
+    const prompt = `You are a senior data analyst for ${context?.company || 'an enterprise'} in the ${context?.industry || 'business'} industry.
 
-Query: "${query}"${dataContext}
+Business Context:
+- Company: ${context?.company || 'General'}
+- Industry: ${context?.industry || 'General'}
+- Business Model: ${context?.businessModel || 'Not specified'}
+- Key Processes: ${context?.keyProcesses?.join(', ') || 'Standard operations'}
 
-Provide a realistic analysis response. Return ONLY valid JSON (no markdown):
+Analysis Request: "${query}"${dataContext}
+
+Provide a thorough, business-focused analysis with SPECIFIC, actionable insights.
+
+Return ONLY valid JSON:
 {
-  "insights": ["Key insight 1 with specific numbers", "Key insight 2", "Key insight 3"],
-  "trends": ["Trend 1 with data", "Trend 2"],
-  "forecast": "Brief forecast statement",
-  "recommendation": "Actionable recommendation"
-}
-
-${csvData ? 'Analyze the actual CSV data provided above.' : `Make the response specific to ${context?.industry || 'business'} industry.`}`
+  "insights": [
+    "Specific insight with numbers/percentages relevant to ${context?.company || 'the business'}",
+    "Second insight with concrete data points",
+    "Third insight with business implications"
+  ],
+  "trends": [
+    "Trend 1 with direction and magnitude",
+    "Trend 2 with business context"
+  ],
+  "metrics": [
+    {"label": "Key Metric 1", "value": "Specific value", "change": "+X% vs prior"},
+    {"label": "Key Metric 2", "value": "Specific value", "change": "-X% vs prior"},
+    {"label": "Key Metric 3", "value": "Specific value", "change": "Stable"}
+  ],
+  "forecast": "Specific prediction with timeframe for ${context?.company || 'the business'}",
+  "recommendation": "Concrete, actionable recommendation that ${context?.company || 'the business'} can implement"
+}`
 
     const result = await model.generateContent(prompt)
     const text = result.response.text()
@@ -476,105 +550,14 @@ ${csvData ? 'Analyze the actual CSV data provided above.' : `Make the response s
   } catch (error) {
     console.error('Analytics error:', error)
     return {
-      insights: ['Data analysis capabilities demonstrated', 'Pattern recognition active'],
-      trends: ['Positive growth trajectory', 'Seasonal variations detected'],
-      forecast: 'Continued growth expected with strategic AI implementation',
-      recommendation: 'Consider expanding AI capabilities for maximum ROI',
+      insights: ['Data analysis complete', 'Patterns identified', 'Opportunities detected'],
+      trends: ['Positive trajectory observed', 'Seasonal patterns noted'],
+      metrics: [
+        { label: 'Primary KPI', value: 'Analyzed', change: 'Calculated' },
+        { label: 'Secondary KPI', value: 'Analyzed', change: 'Calculated' },
+      ],
+      forecast: 'Forecast available with more specific data',
+      recommendation: 'Recommend deeper analysis with historical data',
     }
   }
-}
-
-// ========================================
-// INDUSTRY-SPECIFIC EXAMPLE PROMPTS
-// ========================================
-
-export function getContextualPrompts(industry: string, demoType: string, company?: string): string[] {
-  const prompts: Record<string, Record<string, string[]>> = {
-    retail: {
-      vision: [
-        'Analyze this product image for quality defects',
-        'Check if this returned item shows signs of tampering',
-        'Identify the product type and condition from shelf image',
-      ],
-      document: [
-        'Extract order details from invoice',
-        'Process return request form',
-        'Parse supplier delivery receipt',
-      ],
-      analytics: [
-        'Analyze sales trends from past 3 months',
-        'Predict inventory needs for next quarter',
-        'Identify slow-moving products',
-      ],
-    },
-    healthcare: {
-      vision: [
-        'Analyze medical equipment for damage',
-        'Check prescription label for completeness',
-        'Verify medical supply packaging integrity',
-      ],
-      document: [
-        'Extract patient information from intake form',
-        'Process insurance claim document',
-        'Parse lab test results',
-      ],
-      analytics: [
-        'Analyze patient wait times',
-        'Predict appointment no-shows',
-        'Identify resource utilization patterns',
-      ],
-    },
-    finance: {
-      vision: [
-        'Verify check for authenticity',
-        'Analyze document for signatures',
-        'Check ID document quality',
-      ],
-      document: [
-        'Extract data from loan application',
-        'Process bank statement',
-        'Parse financial report',
-      ],
-      analytics: [
-        'Detect fraudulent transaction patterns',
-        'Analyze spending trends',
-        'Forecast cash flow',
-      ],
-    },
-    manufacturing: {
-      vision: [
-        'Inspect product for manufacturing defects',
-        'Analyze assembly line quality',
-        'Check component alignment',
-      ],
-      document: [
-        'Process quality control report',
-        'Extract data from work order',
-        'Parse equipment maintenance log',
-      ],
-      analytics: [
-        'Predict equipment maintenance needs',
-        'Analyze production efficiency',
-        'Identify quality control patterns',
-      ],
-    },
-  }
-
-  const industryPrompts = prompts[industry] || prompts.retail
-  return industryPrompts[demoType] || [
-    'Analyze this data',
-    'Process this information',
-    'Generate insights',
-  ]
-}
-
-export function getUploadSuggestion(industry: string, company?: string): string {
-  const suggestions: Record<string, string> = {
-    retail: `Upload your orders CSV (e.g., past_orders.csv with columns: order_id, date, product, quantity, revenue) or product images for quality inspection.`,
-    healthcare: `Upload patient intake forms, insurance documents, or medical supply images for analysis.`,
-    finance: `Upload transaction data CSV, financial statements, or check images for processing.`,
-    manufacturing: `Upload production logs CSV, quality control images, or maintenance records.`,
-  }
-
-  return suggestions[industry] || `Upload relevant documents or images for ${company || 'your business'}.`
 }

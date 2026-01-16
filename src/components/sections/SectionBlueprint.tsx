@@ -112,8 +112,8 @@ function InlineDiagram({ chart, company }: { chart: string; company: string }) {
           >
             <div className="p-4 flex items-center justify-between border-b border-white/5">
               <div>
-                <h3 className="text-white font-medium">AI Architecture</h3>
-                <p className="text-sm text-[#c9956c]">{company}</p>
+                <h3 className="text-white font-medium">AI Integration Architecture</h3>
+                <p className="text-sm text-[#f9a86c]">{company}</p>
               </div>
               <button
                 onClick={() => setIsFullscreen(false)}
@@ -138,7 +138,7 @@ function InlineDiagram({ chart, company }: { chart: string; company: string }) {
 
 export function SectionBlueprint() {
   const [companyName, setCompanyName] = useState('')
-  const { companyData, isGenerating, setCompanyData, setIsGenerating, triggerPulse } = useStore()
+  const { companyData, isGenerating, setCompanyData, setIsGenerating, triggerPulse, clearSandboxHistory } = useStore()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -146,6 +146,7 @@ export function SectionBlueprint() {
 
     setIsGenerating(true)
     triggerPulse()
+    clearSandboxHistory()
     
     const data = await generateBlueprint(companyName)
     setCompanyData(data)
@@ -186,8 +187,8 @@ export function SectionBlueprint() {
               viewport={{ once: true }}
               className="text-white/50 text-sm leading-relaxed mb-8"
             >
-              Enter your company name. Our AI analyzes your industry and generates 
-              a custom implementation blueprint with architecture diagram.
+              Enter your company name. Our AI deeply analyzes your business model, 
+              key processes, and generates specific AI solutions with a live sandbox.
             </motion.p>
 
             {/* Input form */}
@@ -203,17 +204,17 @@ export function SectionBlueprint() {
                   type="text"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
-                  placeholder="Enter company name"
+                  placeholder="Enter company name (e.g., Nike, Starbucks)"
                   disabled={isGenerating}
                   className="flex-1 px-4 py-3 bg-white/[0.03] border border-white/10 text-white text-sm 
-                             placeholder-white/30 focus:outline-none focus:border-[#c9956c]/50 
+                             placeholder-white/30 focus:outline-none focus:border-[#f9a86c]/50 
                              transition-colors rounded-lg"
                 />
                 <button
                   type="submit"
                   disabled={isGenerating || !companyName.trim()}
-                  className="px-6 py-3 bg-[#c9956c] text-white text-xs tracking-wider
-                             hover:bg-[#b8855c] transition-all disabled:opacity-50 rounded-lg
+                  className="px-6 py-3 bg-[#f9a86c] text-white text-xs tracking-wider
+                             hover:bg-[#e89a5e] transition-all disabled:opacity-50 rounded-lg
                              flex items-center justify-center min-w-[110px]"
                 >
                   {isGenerating ? (
@@ -223,10 +224,19 @@ export function SectionBlueprint() {
                       className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
                     />
                   ) : (
-                    'GENERATE'
+                    'ANALYZE'
                   )}
                 </button>
               </div>
+              {isGenerating && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-white/40 text-xs mt-3"
+                >
+                  ⚡ Analyzing business model, processes, and generating AI solutions...
+                </motion.p>
+              )}
             </motion.form>
 
             {/* Results */}
@@ -239,51 +249,98 @@ export function SectionBlueprint() {
                   className="space-y-6"
                 >
                   {/* Company header */}
-                  <div className="flex items-center gap-4 p-4 bg-white/[0.02] border border-white/5 rounded-lg">
-                    <div className="w-12 h-12 bg-[#c9956c] rounded-lg flex items-center justify-center text-lg font-medium text-white">
-                      {companyData.company.charAt(0).toUpperCase()}
+                  <div className="p-4 bg-white/[0.02] border border-white/5 rounded-lg">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 bg-[#f9a86c] rounded-lg flex items-center justify-center text-lg font-medium text-white">
+                        {companyData.company.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="text-white font-medium">{companyData.company}</div>
+                        <div className="text-[#f9a86c] text-xs tracking-wider">{companyData.industry.toUpperCase()}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-white font-medium">{companyData.company}</div>
-                      <div className="text-[#c9956c] text-xs tracking-wider">{companyData.industry.toUpperCase()}</div>
-                    </div>
+                    
+                    {/* Business Model */}
+                    {companyData.businessModel && companyData.businessModel !== 'Not specified' && (
+                      <div className="mb-3">
+                        <p className="text-white/30 text-xs mb-1">BUSINESS MODEL</p>
+                        <p className="text-white/60 text-sm">{companyData.businessModel}</p>
+                      </div>
+                    )}
+                    
+                    {/* Key Processes */}
+                    {companyData.keyProcesses && companyData.keyProcesses.length > 0 && (
+                      <div>
+                        <p className="text-white/30 text-xs mb-2">KEY PROCESSES</p>
+                        <div className="flex flex-wrap gap-2">
+                          {companyData.keyProcesses.map((process, i) => (
+                            <span key={i} className="px-2 py-1 text-xs text-white/50 bg-white/[0.03] border border-white/5 rounded">
+                              {process}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Summary */}
-                  <p className="text-white/60 text-sm leading-relaxed">
+                  <p className="text-white/70 text-sm leading-relaxed">
                     {companyData.summary}
                   </p>
 
                   {/* Solutions */}
                   <div className="space-y-3">
-                    <p className="text-white/20 text-xs tracking-wider">RECOMMENDED SOLUTIONS</p>
+                    <p className="text-white/30 text-xs tracking-wider">AI SOLUTIONS IDENTIFIED</p>
                     {companyData.solutions.map((solution, i) => (
                       <motion.div
                         key={i}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.1 }}
-                        className="flex items-start gap-3 p-3 bg-white/[0.02] border border-white/5 rounded-lg group hover:border-[#c9956c]/20 transition-colors"
+                        className="p-4 bg-white/[0.02] border border-white/5 rounded-lg group hover:border-[#f9a86c]/20 transition-colors"
                       >
-                        <div className="w-6 h-6 bg-[#c9956c]/20 rounded flex items-center justify-center shrink-0">
-                          <span className="text-[#c9956c] text-xs">{i + 1}</span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-white/80 text-sm font-medium">{solution.name}</div>
-                          <div className="text-white/40 text-xs mt-1">{solution.description}</div>
-                          <div className="text-[#c9956c] text-xs mt-2">{solution.impact}</div>
+                        <div className="flex items-start gap-3">
+                          <div className="w-6 h-6 bg-[#f9a86c]/20 rounded flex items-center justify-center shrink-0 mt-0.5">
+                            <span className="text-[#f9a86c] text-xs">{i + 1}</span>
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-white/90 text-sm font-medium">{solution.name}</span>
+                              <span className="text-[8px] text-white/30 bg-white/5 px-1.5 py-0.5 rounded uppercase">
+                                {solution.type}
+                              </span>
+                            </div>
+                            <p className="text-white/50 text-xs">{solution.description}</p>
+                            <p className="text-[#f9a86c] text-xs mt-2 font-medium">{solution.impact}</p>
+                          </div>
                         </div>
                       </motion.div>
                     ))}
                   </div>
 
+                  {/* Sandbox Prompts Generated Notice */}
+                  {companyData.sandboxPrompts && companyData.sandboxPrompts.length > 0 && (
+                    <div className="p-3 bg-[#f9a86c]/5 border border-[#f9a86c]/20 rounded-lg">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                        <p className="text-[#f9a86c] text-xs font-medium">SANDBOX READY</p>
+                      </div>
+                      <p className="text-white/40 text-xs">
+                        {companyData.sandboxPrompts.length} business-specific prompts generated for the AI Sandbox
+                      </p>
+                    </div>
+                  )}
+
                   {/* CTA to sandbox */}
                   <button
                     onClick={() => document.getElementById('sandbox')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="w-full py-3 border border-[#c9956c]/30 text-[#c9956c] text-xs tracking-wider
-                               hover:bg-[#c9956c]/10 transition-all rounded-lg"
+                    className="w-full py-4 bg-[#f9a86c] text-white text-xs tracking-wider font-medium
+                               hover:bg-[#e89a5e] transition-all rounded-lg flex items-center justify-center gap-2"
                   >
-                    TRY THESE SOLUTIONS IN SANDBOX →
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    TRY SOLUTIONS IN SANDBOX
                   </button>
 
                   {/* Reset */}
@@ -291,10 +348,11 @@ export function SectionBlueprint() {
                     onClick={() => {
                       setCompanyData(null)
                       setCompanyName('')
+                      clearSandboxHistory()
                     }}
-                    className="text-white/20 text-xs hover:text-white/40 transition-colors"
+                    className="text-white/30 text-xs hover:text-white/50 transition-colors"
                   >
-                    Generate for another company
+                    Analyze another company
                   </button>
                 </motion.div>
               )}
@@ -311,8 +369,15 @@ export function SectionBlueprint() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                 >
-                  <p className="text-white/30 text-xs tracking-[0.3em] mb-4">ARCHITECTURE DIAGRAM</p>
+                  <p className="text-white/40 text-xs tracking-[0.3em] mb-4">AI INTEGRATION WORKFLOW</p>
                   <InlineDiagram chart={companyData.mermaidDiagram} company={companyData.company} />
+                  <div className="mt-4 p-3 bg-white/[0.02] border border-white/5 rounded-lg">
+                    <p className="text-white/30 text-xs mb-2">WHAT THIS SHOWS</p>
+                    <p className="text-white/50 text-xs">
+                      How AI integrates into {companyData.company}'s workflow — from data inputs 
+                      through AI processing to business outcomes.
+                    </p>
+                  </div>
                 </motion.div>
               ) : (
                 <motion.div
@@ -320,13 +385,15 @@ export function SectionBlueprint() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="h-[350px] border border-dashed border-white/10 rounded-lg flex flex-col items-center justify-center"
+                  className="h-[400px] border border-dashed border-white/10 rounded-lg flex flex-col items-center justify-center p-8"
                 >
                   <svg className="w-16 h-16 text-white/10 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
                   </svg>
-                  <p className="text-white/30 text-sm">Architecture diagram will appear here</p>
-                  <p className="text-white/20 text-xs mt-1">Enter a company name to generate</p>
+                  <p className="text-white/40 text-sm text-center mb-2">Architecture diagram will appear here</p>
+                  <p className="text-white/30 text-xs text-center">
+                    Enter a company name to see how AI<br />integrates into their operations
+                  </p>
                 </motion.div>
               )}
             </AnimatePresence>
