@@ -22,6 +22,8 @@ const Scene = dynamic(() => import('@/components/canvas/Scene'), {
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
+  const [showNav, setShowNav] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
   const setCurrentSection = useStore((state) => state.setCurrentSection)
   const setScrollProgress = useStore((state) => state.setScrollProgress)
 
@@ -48,6 +50,29 @@ export default function Home() {
     const timer = setTimeout(() => setIsLoading(false), 600)
     return () => clearTimeout(timer)
   }, [setCurrentSection])
+
+  // Hide/show nav on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      
+      // Always show nav at the very top
+      if (currentScrollY < 10) {
+        setShowNav(true)
+      } else if (currentScrollY > lastScrollY) {
+        // Scrolling down - hide nav
+        setShowNav(false)
+      } else {
+        // Scrolling up - show nav
+        setShowNav(true)
+      }
+      
+      setLastScrollY(currentScrollY)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [lastScrollY])
 
   return (
     <>
@@ -83,7 +108,12 @@ export default function Home() {
       </div>
 
       {/* Minimal Navigation with MUCH LARGER LOGO */}
-      <nav className="fixed top-0 left-0 right-0 z-50 p-6 md:p-8 lg:p-10">
+      <motion.nav 
+        className="fixed top-0 left-0 right-0 z-50 p-6 md:p-8 lg:p-10"
+        initial={{ y: 0 }}
+        animate={{ y: showNav ? 0 : -120 }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
+      >
         <div className="flex items-center justify-between">
           <button 
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -119,7 +149,7 @@ export default function Home() {
             </button>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
       {/* Content sections */}
       <main className="relative z-10">

@@ -32,8 +32,8 @@ export function Emergence() {
   // Responsive scale: bigger on mobile now, but dimmer
   const responsiveScale = isMobile ? 0.85 : isTablet ? 0.7 : 1
   
-  // Mobile dimming factor for opacity
-  const mobileDimFactor = isMobile ? 0.4 : 1
+  // Mobile dimming factor for opacity (increased from 0.4 to 0.7 for better visibility)
+  const mobileDimFactor = isMobile ? 0.7 : 1
   
   const handlePointerMove = useCallback((e: THREE.Event) => {
     const event = e as unknown as { clientX: number; clientY: number }
