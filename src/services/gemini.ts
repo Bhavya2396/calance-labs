@@ -120,18 +120,27 @@ Return ONLY valid JSON (no markdown, no code blocks):
       "expectedOutcome": "The extracted/processed data"
     }
   ],
-  "mermaidDiagram": "graph TD\\nA[${companyName} Operations] --> B[AI Integration Layer]\\nB --> C[Solution 1]\\nB --> D[Solution 2]\\n..."
+  "mermaidDiagram": "graph TD\\nA[${companyName}] --> B[AI Layer]\\nB --> C[Customer]\\nB --> D[Operations]\\nC --> E[Chatbot]\\nD --> F[Automation]"
 }
 
-MERMAID DIAGRAM REQUIREMENTS:
-- Show ${companyName}'s actual workflow with AI integration points
-- Use their specific processes, not generic ones
-- Show data flow: Input Sources → AI Processing → Business Outcomes
-- Include 12-18 nodes that represent real parts of their business
-- Format: graph TD with \\n for newlines
-- Use simple IDs (A, B, C...) with labels in brackets [Label]
-- NO special characters in labels, NO quotes
-- Show clear ROI path: which AI outputs drive which business results
+MERMAID DIAGRAM - CRITICAL FORMATTING RULES:
+1. Start with exactly: graph TD
+2. Use ONLY letters for node IDs: A, B, C, D, E, F, etc.
+3. Node labels in square brackets: A[Label Text]
+4. Arrows use -->
+5. NO special characters in labels (no &, <, >, ", ', parentheses)
+6. NO spaces in node IDs
+7. Keep labels SHORT (max 3-4 words)
+8. Use \\n for line breaks in JSON
+9. Include 10-15 nodes showing: ${companyName} → AI Solutions → Business Outcomes
+10. Example format:
+    graph TD\\nA[Company] --> B[AI]\\nB --> C[Result]
+
+DIAGRAM STRUCTURE:
+- Start: ${companyName}'s current state
+- Middle: AI solutions (use solution names from above)
+- End: Measurable business outcomes
+- Show connections between related solutions
 
 CRITICAL: Every solution and prompt must be SPECIFIC to ${companyName}'s actual business. Generic AI capabilities are useless - show how AI integrates into THEIR specific operations.
 
@@ -225,20 +234,22 @@ function generateFallbackPrompt(capability: SandboxPrompt['capability'], company
 }
 
 function generateFallbackDiagram(company: string): string {
+  // Simple clean node labels without special characters
+  const cleanCompany = company.replace(/[^A-Za-z0-9\s]/g, '').slice(0, 20)
   return `graph TD
-A[${company}] --> B[AI Integration]
-B --> C[Customer Experience]
+A[${cleanCompany}] --> B[AI Solutions]
+B --> C[Customer]
 B --> D[Operations]
 B --> E[Analytics]
-C --> F[Smart Support]
-C --> G[Personalization]
+C --> F[Support]
+C --> G[Experience]
 D --> H[Automation]
-D --> I[Optimization]
+D --> I[Efficiency]
 E --> J[Insights]
 E --> K[Forecasting]
-F --> L[Better Outcomes]
+F --> L[Outcomes]
 H --> L
-J --> M[Data-Driven Decisions]`
+J --> L`
 }
 
 function generateFallbackBlueprint(companyName: string): CompanyData {

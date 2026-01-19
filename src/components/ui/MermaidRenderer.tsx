@@ -50,60 +50,58 @@ function cleanMermaidChart(chart: string): string {
   // Remove any leading/trailing whitespace
   cleaned = cleaned.trim()
   
-  // Fix common syntax issues
-  // Remove any special characters in labels that cause issues
-  cleaned = cleaned.replace(/[\[\]]/g, (match, offset, str) => {
-    // Check if we're inside a node definition - keep brackets for node labels
-    const before = str.slice(0, offset)
-    const isInNodeDef = (before.match(/[A-Za-z0-9_]+$/)) !== null
-    return isInNodeDef ? match : ''
-  })
-  
-  // Ensure proper node label format - fix common issues
-  cleaned = cleaned.replace(/\[([^\]]*?)[\"\']([^\]]*?)\]/g, '[$1$2]') // Remove quotes in labels
-  cleaned = cleaned.replace(/\[\s*\]/g, '[Node]') // Empty labels
-  cleaned = cleaned.replace(/-->\s*\[/g, '--> [') // Space after arrow
-  
-  // Remove parentheses that aren't part of the diagram syntax
-  cleaned = cleaned.replace(/\(([^)]+)\)\s*-->/g, '[$1] -->') // Convert () to [] for nodes
-  
-  // Fix nodes with special characters - replace with safe characters
-  cleaned = cleaned.replace(/\[([^\]]*[&<>][^\]]*)\]/g, (match, label) => {
-    const safeLabel = label.replace(/&/g, 'and').replace(/</g, '').replace(/>/g, '')
+  // Remove ALL special characters from labels
+  cleaned = cleaned.replace(/\[([^\]]+)\]/g, (match, label) => {
+    // Replace common problematic characters
+    let safeLabel = label
+      .replace(/[&]/g, 'and')
+      .replace(/[<>]/g, '')
+      .replace(/["'`]/g, '')
+      .replace(/[()\[\]{}]/g, '')
+      .replace(/[|\/\\]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
     return `[${safeLabel}]`
   })
   
-  // Fix any double arrows
-  cleaned = cleaned.replace(/-->\s*-->/g, '-->')
+  // Fix empty labels
+  cleaned = cleaned.replace(/\[\s*\]/g, '[Node]')
   
-  // Ensure it starts with a valid diagram type
-  if (!cleaned.match(/^(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap)/)) {
+  // Fix arrow spacing
+  cleaned = cleaned.replace(/-->\s*-->/g, '-->')
+  cleaned = cleaned.replace(/\s+-->/g, ' -->')
+  cleaned = cleaned.replace(/-->\s+/g, '--> ')
+  
+  // Ensure diagram starts with valid type
+  if (!cleaned.match(/^(graph|flowchart|sequenceDiagram)/i)) {
     cleaned = 'graph TD\n' + cleaned
   }
   
-  // Ensure proper line breaks
-  cleaned = cleaned.split('\n').map(line => line.trim()).filter(line => line).join('\n')
+  // Clean up line breaks - keep only meaningful lines
+  cleaned = cleaned.split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .filter(line => !line.match(/^[;#]/)) // Remove comments
+    .join('\n')
   
   return cleaned
 }
 
 // Create a fallback diagram for a company
 function createFallbackDiagram(company?: string): string {
-  const companyName = company || 'Business'
+  // Clean company name - remove special characters
+  const cleanName = (company || 'Business').replace(/[^A-Za-z0-9\s]/g, '').slice(0, 20)
   return `graph TD
-    A[${companyName}] --> B[AI Layer]
-    B --> C[Customer Experience]
-    B --> D[Operations]
-    B --> E[Analytics]
-    C --> F[Chatbots]
-    C --> G[Personalization]
-    D --> H[Automation]
-    D --> I[Optimization]
-    E --> J[Insights]
-    E --> K[Forecasting]
-    F --> L[Better Service]
-    H --> L
-    J --> M[Smarter Decisions]`
+A[${cleanName}] --> B[AI Solutions]
+B --> C[Customer]
+B --> D[Operations]
+C --> E[Support]
+C --> F[Experience]
+D --> G[Automation]
+D --> H[Efficiency]
+E --> I[Outcomes]
+G --> I
+H --> I`
 }
 
 interface MermaidRendererProps {
