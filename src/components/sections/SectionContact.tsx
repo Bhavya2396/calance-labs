@@ -4,12 +4,15 @@ import { motion } from 'framer-motion'
 
 export function SectionContact() {
   return (
-    <section id="contact" className="relative min-h-screen flex flex-col justify-end bg-black pointer-events-auto">
+    <section id="contact" className="relative min-h-screen flex flex-col justify-end">
+      {/* Background layer */}
+      <div className="absolute inset-0 bg-black -z-10" />
+      
       {/* Gradient overlay for readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none z-0" />
       
       {/* Content centered at bottom */}
-      <div className="relative z-10 p-6 md:p-12 lg:p-20 pb-12">
+      <div className="relative z-30 p-6 md:p-12 lg:p-20 pb-12 pointer-events-auto">
         <div className="max-w-2xl mx-auto text-center">
           <motion.p
             initial={{ opacity: 0 }}

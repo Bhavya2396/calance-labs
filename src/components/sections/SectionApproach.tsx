@@ -11,9 +11,12 @@ const STEPS = [
 
 export function SectionApproach() {
   return (
-    <section id="approach" className="relative min-h-screen flex items-center bg-black pointer-events-auto">
+    <section id="approach" className="relative min-h-screen flex items-center">
+      {/* Background layer */}
+      <div className="absolute inset-0 bg-black -z-10" />
+      
       {/* Content positioned left */}
-      <div className="p-6 md:p-12 lg:p-20 max-w-2xl">
+      <div className="relative z-30 p-6 md:p-12 lg:p-20 max-w-2xl pointer-events-auto">
         <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

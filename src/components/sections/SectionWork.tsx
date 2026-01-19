@@ -223,8 +223,11 @@ export function SectionWork() {
   const Visualization = activeProject.visualization
 
   return (
-    <section id="work" className="relative min-h-screen py-20 bg-[#a8602c] pointer-events-auto">
-      <div className="px-6 md:px-12 lg:px-20 max-w-7xl mx-auto">
+    <section id="work" className="relative min-h-screen py-20">
+      {/* Background layer */}
+      <div className="absolute inset-0 bg-[#a8602c] -z-10" />
+      
+      <div className="relative z-30 px-6 md:px-12 lg:px-20 max-w-7xl mx-auto pointer-events-auto">
         {/* Header */}
         <div className="mb-12">
           <motion.p
