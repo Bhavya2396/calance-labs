@@ -5,8 +5,8 @@ import { motion } from 'framer-motion'
 export function SectionProblem() {
   return (
     <section id="problem" className="relative min-h-screen flex items-center justify-end">
-      {/* Semi-transparent background - 3D shows through */}
-      <div className="absolute inset-0 bg-[#a8602c]/95" />
+      {/* Semi-transparent background - 3D clearly visible */}
+      <div className="absolute inset-0 bg-[#a8602c]/75" />
       
       {/* Content positioned right, away from 3D on left */}
       <div className="relative p-6 md:p-12 lg:p-20 max-w-lg text-right">

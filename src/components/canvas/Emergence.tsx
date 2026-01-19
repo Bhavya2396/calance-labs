@@ -150,81 +150,81 @@ export function Emergence() {
         return { 
           x: viewport.width * 0.28 * tabletMultiplier, 
           y: 0,
-          scale: 1.2 * responsiveScale,
+          scale: 1.4 * responsiveScale,
           spread: 1,
           speed: 1,
           color: '#f9a86c', // Orange 3D on black background
-          brightness: 1.2,
+          brightness: 2.0,
         }
       case 'problem':
         return { 
           x: -viewport.width * 0.28 * tabletMultiplier,
           y: 0,
-          scale: 1 * responsiveScale,
+          scale: 1.2 * responsiveScale,
           spread: 1.3,
           speed: 0.6,
           color: '#ffffff', // White 3D on orange background
-          brightness: 1.4,
+          brightness: 2.2,
         }
       case 'approach':
         return { 
           x: viewport.width * 0.28 * tabletMultiplier,
           y: 0,
-          scale: 0.9 * responsiveScale,
+          scale: 1.1 * responsiveScale,
           spread: 0.8,
           speed: 0.8,
           color: '#f9a86c', // Orange 3D on black background
-          brightness: 1.3,
+          brightness: 2.0,
         }
       case 'blueprint':
         return { 
           x: viewport.width * 0.42 * tabletMultiplier,
           y: -viewport.height * 0.12,
-          scale: 0.7 * responsiveScale,
+          scale: 0.9 * responsiveScale,
           spread: 0.6,
           speed: 1.5,
           color: '#ffffff', // White 3D on dark gray background
-          brightness: 1.5,
+          brightness: 2.2,
         }
       case 'sandbox':
         return { 
           x: -viewport.width * 0.45 * tabletMultiplier,
           y: viewport.height * 0.2,
-          scale: 0.5 * responsiveScale,
+          scale: 0.7 * responsiveScale,
           spread: 0.7,
           speed: 1.2,
           color: '#f9a86c', // Orange 3D on black background
-          brightness: 1.4,
+          brightness: 2.0,
         }
       case 'work':
         return { 
           x: viewport.width * 0.45 * tabletMultiplier,
           y: viewport.height * 0.15,
-          scale: 0.5 * responsiveScale,
+          scale: 0.7 * responsiveScale,
           spread: 0.8,
           speed: 0.9,
           color: '#ffffff', // White 3D on orange background
-          brightness: 1.3,
+          brightness: 2.2,
         }
       case 'contact':
         return { 
           x: 0,
           y: viewport.height * 0.25,
-          scale: 1.4 * responsiveScale,
+          scale: 1.6 * responsiveScale,
           spread: 0.5,
           speed: 0.5,
           color: '#f9a86c', // Orange 3D on black background
-          brightness: 1.6,
+          brightness: 2.4,
         }
       default:
         return { 
           x: viewport.width * 0.2,
           y: 0,
-          scale: 1 * responsiveScale,
+          scale: 1.2 * responsiveScale,
           spread: 1,
           speed: 1,
           color: '#f9a86c',
-          brightness: 1.2,
+          brightness: 2.0,
         }
     }
   }, [viewport, isMobile, isTablet, responsiveScale])

@@ -5,8 +5,8 @@ import { motion } from 'framer-motion'
 export function SectionContact() {
   return (
     <section id="contact" className="relative min-h-screen flex flex-col justify-end">
-      {/* Semi-transparent background - 3D shows through */}
-      <div className="absolute inset-0 bg-black/90" />
+      {/* Semi-transparent background - 3D clearly visible */}
+      <div className="absolute inset-0 bg-black/70" />
       
       {/* Gradient overlay for readability */}
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none" />

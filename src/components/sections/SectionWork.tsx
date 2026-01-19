@@ -224,8 +224,8 @@ export function SectionWork() {
 
   return (
     <section id="work" className="relative min-h-screen py-20">
-      {/* Semi-transparent background - 3D shows through */}
-      <div className="absolute inset-0 bg-[#a8602c]/95" />
+      {/* Semi-transparent background - 3D clearly visible */}
+      <div className="absolute inset-0 bg-[#a8602c]/75" />
       
       <div className="relative px-6 md:px-12 lg:px-20 max-w-7xl mx-auto">
         {/* Header */}

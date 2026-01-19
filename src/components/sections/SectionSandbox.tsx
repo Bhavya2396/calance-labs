@@ -303,8 +303,8 @@ export function SectionSandbox() {
 
   return (
     <section id="sandbox" className="relative min-h-screen py-20">
-      {/* Semi-transparent background - 3D shows through */}
-      <div className="absolute inset-0 bg-black/90" />
+      {/* Semi-transparent background - 3D clearly visible */}
+      <div className="absolute inset-0 bg-black/70" />
       
       <div className="relative px-6 md:px-12 lg:px-20 max-w-7xl mx-auto">
         {/* Header */}

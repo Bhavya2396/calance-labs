@@ -12,8 +12,8 @@ const STEPS = [
 export function SectionApproach() {
   return (
     <section id="approach" className="relative min-h-screen flex items-center">
-      {/* Semi-transparent background - 3D shows through */}
-      <div className="absolute inset-0 bg-black/90" />
+      {/* Semi-transparent background - 3D clearly visible */}
+      <div className="absolute inset-0 bg-black/70" />
       
       {/* Content positioned left */}
       <div className="relative p-6 md:p-12 lg:p-20 max-w-2xl">
