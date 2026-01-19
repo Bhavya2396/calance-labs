@@ -303,10 +303,10 @@ export function SectionSandbox() {
 
   return (
     <section id="sandbox" className="relative min-h-screen py-20">
-      {/* Background layer */}
-      <div className="absolute inset-0 bg-black -z-10" />
+      {/* Semi-transparent background - 3D shows through */}
+      <div className="absolute inset-0 bg-black/90" />
       
-      <div className="relative z-30 px-6 md:px-12 lg:px-20 max-w-7xl mx-auto pointer-events-auto">
+      <div className="relative px-6 md:px-12 lg:px-20 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-10">
           <motion.p

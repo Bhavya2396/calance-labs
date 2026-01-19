@@ -5,11 +5,11 @@ import { motion } from 'framer-motion'
 export function SectionProblem() {
   return (
     <section id="problem" className="relative min-h-screen flex items-center justify-end">
-      {/* Background layer */}
-      <div className="absolute inset-0 bg-[#a8602c] -z-10" />
+      {/* Semi-transparent background - 3D shows through */}
+      <div className="absolute inset-0 bg-[#a8602c]/95" />
       
       {/* Content positioned right, away from 3D on left */}
-      <div className="relative z-30 p-6 md:p-12 lg:p-20 max-w-lg text-right pointer-events-auto">
+      <div className="relative p-6 md:p-12 lg:p-20 max-w-lg text-right">
         <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

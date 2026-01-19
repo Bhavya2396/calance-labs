@@ -156,10 +156,10 @@ export function SectionBlueprint() {
 
   return (
     <section id="blueprint" className="relative min-h-screen py-20">
-      {/* Background layer */}
-      <div className="absolute inset-0 bg-[#1a1a1a] -z-10" />
+      {/* Semi-transparent background - 3D shows through */}
+      <div className="absolute inset-0 bg-[#1a1a1a]/95" />
       
-      <div className="relative z-30 px-6 md:px-12 lg:px-20 max-w-7xl mx-auto pointer-events-auto">
+      <div className="relative px-6 md:px-12 lg:px-20 max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-start">
           
           {/* Left column - Input and results */}

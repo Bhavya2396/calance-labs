@@ -102,8 +102,8 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* Fixed 3D Canvas - z-20 above backgrounds but below content */}
-      <div className="fixed inset-0 z-20 pointer-events-none">
+      {/* Fixed 3D Canvas - z-10 BEHIND content */}
+      <div className="fixed inset-0 z-10 pointer-events-none">
         <Scene />
       </div>
 
@@ -151,8 +151,8 @@ export default function Home() {
         </div>
       </motion.nav>
 
-      {/* Content sections */}
-      <main className="relative z-10">
+      {/* Content sections - z-20 ABOVE 3D canvas */}
+      <main className="relative z-20">
         <SectionHero />
         <SectionProblem />
         <SectionApproach />

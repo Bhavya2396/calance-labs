@@ -5,11 +5,11 @@ import { motion } from 'framer-motion'
 export function SectionHero() {
   return (
     <section id="hero" className="relative h-screen flex items-end">
-      {/* Background layer */}
-      <div className="absolute inset-0 bg-black -z-10" />
+      {/* Semi-transparent background - 3D shows through */}
+      <div className="absolute inset-0 bg-black/90" />
       
       {/* Content positioned bottom-left, away from 3D */}
-      <div className="relative z-30 p-6 md:p-12 lg:p-20 pb-24 max-w-xl pointer-events-auto">
+      <div className="relative p-6 md:p-12 lg:p-20 pb-24 max-w-xl">
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
