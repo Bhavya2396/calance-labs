@@ -102,14 +102,14 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* Fixed 3D Canvas - z-20 to appear above section backgrounds */}
-      <div className="fixed inset-0 z-20 pointer-events-none">
+      {/* Fixed 3D Canvas - z-10 behind content */}
+      <div className="fixed inset-0 z-10 pointer-events-none">
         <Scene />
       </div>
 
       {/* Minimal Navigation with MUCH LARGER LOGO */}
       <motion.nav 
-        className="fixed top-0 left-0 right-0 z-50 p-6 md:p-8 lg:p-10"
+        className="fixed top-0 left-0 right-0 z-50 p-6 md:p-8 lg:p-10 pointer-events-auto"
         initial={{ y: 0 }}
         animate={{ y: showNav ? 0 : -120 }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
@@ -152,7 +152,7 @@ export default function Home() {
       </motion.nav>
 
       {/* Content sections */}
-      <main className="relative z-10">
+      <main className="relative z-20 pointer-events-auto">
         <SectionHero />
         <SectionProblem />
         <SectionApproach />
